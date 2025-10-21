@@ -47,10 +47,24 @@
     position: relative;
   }
 
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
   .logo img {
     width: 70%;
-    max-width: 200px;
-    margin-bottom: 8px;
+    max-width: 160px;
+  }
+
+  video#bouchonVideo {
+    width: 60px;
+    height: auto;
+    border-radius: 8px;
+    display: none;
   }
 
   .subtitle {
@@ -90,6 +104,7 @@
     color: #113028;
     position: absolute;
     padding: 0 8px;
+    text-align: center;
   }
 
   canvas#scratchCanvas {
@@ -113,26 +128,6 @@
     box-shadow: 0 6px 14px rgba(255, 107, 58, 0.3);
   }
 
-  .bottle-image {
-    position: absolute;
-    right: -10px;
-    bottom: -20px;
-    width: 100px;
-    height: auto;
-    transform-origin: bottom center;
-  }
-
-  .pop {
-    animation: popBouchon 1s ease-out forwards;
-  }
-
-  @keyframes popBouchon {
-    0% { transform: translateY(0) rotate(0); opacity: 1; }
-    40% { transform: translateY(-50px) rotate(-15deg); }
-    80% { transform: translateY(-90px) rotate(10deg); opacity: 1; }
-    100% { transform: translateY(-140px) rotate(-20deg); opacity: 0; }
-  }
-
   .admin-btn {
     margin-top: 10px;
     font-size: 14px;
@@ -147,14 +142,21 @@
     .card { padding: 16px; }
     .scratch-area { height: 120px; }
     .prize-text { font-size: 16px; }
-    .bottle-image { width: 80px; right: -5px; bottom: -15px; }
+    video#bouchonVideo { width: 45px; }
   }
 </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
-      <div class="logo"><img src="Prix2.PNG" alt="Logo MA EK MO"></div>
+
+      <div class="header">
+        <div class="logo"><img src="Prix2.PNG" alt="Logo MA EK MO"></div>
+        <video id="bouchonVideo" muted playsinline>
+          <source src="bouchon2.mp4" type="video/mp4">
+        </video>
+      </div>
+
       <div class="subtitle">MA EK MO — Rhums arrangés & punchs</div>
       <div class="player-number" id="playerNumber"></div>
 
@@ -167,8 +169,6 @@
         <button id="revealBtn">Révéler</button>
       </div>
 
-      <img src="bouchon.png" class="bottle-image" id="bouchonImg" alt="Bouteille de rhum">
-
       <button class="admin-btn" id="adminUnlock">🔓 Débloquer (admin)</button>
     </div>
   </div>
@@ -180,8 +180,8 @@ const prizeText = document.getElementById('prizeText');
 const revealBtn = document.getElementById('revealBtn');
 const scratchArea = document.getElementById('scratchArea');
 const playerNumberEl = document.getElementById('playerNumber');
-const bouchonImg = document.getElementById('bouchonImg');
 const adminUnlock = document.getElementById('adminUnlock');
+const bouchonVideo = document.getElementById('bouchonVideo');
 
 let isDrawing = false;
 let hasResult = false;
@@ -194,6 +194,15 @@ if (!localStorage.getItem('hasPlayed')) {
 }
 playerNumberEl.textContent = `Joueur n°${totalPlayers}`;
 
+// ----------- Chargement du résultat précédent -----------
+const storedResult = localStorage.getItem('lastResult');
+if (storedResult) {
+  prizeText.textContent = storedResult;
+  hasResult = true;
+  revealBtn.disabled = true;
+  canvas.style.pointerEvents = "none";
+}
+
 // ----------- Gestion du blocage après avoir joué -----------
 function lockGame() {
   hasResult = true;
@@ -204,10 +213,12 @@ function lockGame() {
 
 function unlockGame() {
   localStorage.removeItem('hasPlayed');
+  localStorage.removeItem('lastResult');
   revealBtn.disabled = false;
   canvas.style.pointerEvents = "auto";
   prizeText.textContent = "Gratte ici 🎄";
   hasResult = false;
+  bouchonVideo.style.display = "none";
   drawGold();
 }
 
@@ -263,19 +274,24 @@ function getScratchedRatio() {
 function revealResult() {
   hasResult = true;
   const win = Math.random() < (5/200);
-  prizeText.textContent = win
+  const resultText = win
     ? '🎉 Félicitations tu as gagné !'
     : '👏🏾 Bravo tu obtiens une réduction de -10% dès 30€ d\'achat.';
+  prizeText.textContent = resultText;
+  localStorage.setItem('lastResult', resultText);
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  animateBouchon();
+  playVideo();
   lockGame();
 }
 
-// ----------- Animation bouchon -----------
-function animateBouchon() {
-  bouchonImg.classList.remove('pop');
-  void bouchonImg.offsetWidth;
-  bouchonImg.classList.add('pop');
+// ----------- Animation vidéo -----------
+function playVideo() {
+  bouchonVideo.style.display = "block";
+  bouchonVideo.currentTime = 0;
+  bouchonVideo.play().catch(() => {});
+  bouchonVideo.onended = () => {
+    setTimeout(() => bouchonVideo.style.display = "none", 500);
+  };
 }
 
 // ----------- Déblocage admin -----------
@@ -292,7 +308,6 @@ adminUnlock.addEventListener('click', () => {
 // ----------- Démarrage -----------
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
-if (localStorage.getItem('hasPlayed')) lockGame();
 </script>
 </body>
 </html>
