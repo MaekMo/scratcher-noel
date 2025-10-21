@@ -17,7 +17,9 @@
     margin: 0;
     font-family: "Inter", sans-serif;
     background: url("noeltropical.jpg") no-repeat center center fixed;
-    background-size: cover;
+    background-size: contain;
+    background-color: #ffeac9;
+    background-blend-mode: lighten;
     color: #113028;
     overflow-x: hidden;
     display: flex;
@@ -111,50 +113,41 @@
     box-shadow: 0 6px 14px rgba(255, 107, 58, 0.3);
   }
 
-  .bottle-wrap {
+  .bottle-image {
     position: absolute;
-    right: 16px;
-    top: -35px;
-    width: 60px;
-    height: 100px;
-    pointer-events: none;
+    right: -10px;
+    bottom: -20px;
+    width: 100px;
+    height: auto;
+    transform-origin: bottom center;
   }
 
-  .bottle {
-    position: absolute;
-    bottom: 0;
-    width: 50px;
-    height: 80px;
-    background: linear-gradient(to top, #e9fff9, #c2f0e6);
-    border: 2px solid #8fd6c4;
-    border-radius: 10px;
+  .pop {
+    animation: popBouchon 1s ease-out forwards;
   }
 
-  .cork {
-    width: 16px;
-    height: 16px;
-    background: #b87333;
-    border-radius: 4px;
-    position: absolute;
-    top: -8px;
-    left: 50%;
-    transform: translateX(-50%);
+  @keyframes popBouchon {
+    0% { transform: translateY(0) rotate(0); opacity: 1; }
+    40% { transform: translateY(-50px) rotate(-15deg); }
+    80% { transform: translateY(-90px) rotate(10deg); opacity: 1; }
+    100% { transform: translateY(-140px) rotate(-20deg); opacity: 0; }
   }
 
-  .cork.pop {
-    animation: pop 1s ease forwards;
-  }
-
-  @keyframes pop {
-    0% { transform: translateX(-50%) translateY(0); opacity: 1; }
-    50% { transform: translateX(-60%) translateY(-70px) rotate(-20deg); opacity: 1; }
-    100% { transform: translateX(-70%) translateY(-120px) rotate(-30deg); opacity: 0; }
+  .admin-btn {
+    margin-top: 10px;
+    font-size: 14px;
+    background: none;
+    color: #444;
+    border: none;
+    text-decoration: underline;
+    cursor: pointer;
   }
 
   @media (max-width: 480px) {
     .card { padding: 16px; }
     .scratch-area { height: 120px; }
     .prize-text { font-size: 16px; }
+    .bottle-image { width: 80px; right: -5px; bottom: -15px; }
   }
 </style>
 </head>
@@ -174,10 +167,9 @@
         <button id="revealBtn">Révéler</button>
       </div>
 
-      <div class="bottle-wrap" id="bottleAnim">
-        <div class="bottle"></div>
-        <div class="cork" id="cork"></div>
-      </div>
+      <img src="bouchon.png" class="bottle-image" id="bouchonImg" alt="Bouteille de rhum">
+
+      <button class="admin-btn" id="adminUnlock">🔓 Débloquer (admin)</button>
     </div>
   </div>
 
@@ -187,17 +179,37 @@ const ctx = canvas.getContext('2d');
 const prizeText = document.getElementById('prizeText');
 const revealBtn = document.getElementById('revealBtn');
 const scratchArea = document.getElementById('scratchArea');
-const cork = document.getElementById('cork');
 const playerNumberEl = document.getElementById('playerNumber');
+const bouchonImg = document.getElementById('bouchonImg');
+const adminUnlock = document.getElementById('adminUnlock');
 
 let isDrawing = false;
 let hasResult = false;
 
 // ----------- Gestion du numéro de joueur -----------
 let totalPlayers = parseInt(localStorage.getItem('totalPlayers') || '0', 10);
-totalPlayers++;
-localStorage.setItem('totalPlayers', totalPlayers);
+if (!localStorage.getItem('hasPlayed')) {
+  totalPlayers++;
+  localStorage.setItem('totalPlayers', totalPlayers);
+}
 playerNumberEl.textContent = `Joueur n°${totalPlayers}`;
+
+// ----------- Gestion du blocage après avoir joué -----------
+function lockGame() {
+  hasResult = true;
+  localStorage.setItem('hasPlayed', 'true');
+  revealBtn.disabled = true;
+  canvas.style.pointerEvents = "none";
+}
+
+function unlockGame() {
+  localStorage.removeItem('hasPlayed');
+  revealBtn.disabled = false;
+  canvas.style.pointerEvents = "auto";
+  prizeText.textContent = "Gratte ici 🎄";
+  hasResult = false;
+  drawGold();
+}
 
 // ----------- Initialisation du canvas doré -----------
 function resizeCanvas() {
@@ -251,25 +263,36 @@ function getScratchedRatio() {
 function revealResult() {
   hasResult = true;
   const win = Math.random() < (5/200);
-  if (win) {
-    prizeText.textContent = '🎉 Félicitations tu as gagné !';
-  } else {
-    prizeText.textContent = '👏🏾 Bravo tu obtiens une réduction de -10% dès 30€ d\'achat.';
-  }
+  prizeText.textContent = win
+    ? '🎉 Félicitations tu as gagné !'
+    : '👏🏾 Bravo tu obtiens une réduction de -10% dès 30€ d\'achat.';
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  animateCork();
+  animateBouchon();
+  lockGame();
 }
 
 // ----------- Animation bouchon -----------
-function animateCork() {
-  cork.classList.remove('pop');
-  void cork.offsetWidth;
-  cork.classList.add('pop');
+function animateBouchon() {
+  bouchonImg.classList.remove('pop');
+  void bouchonImg.offsetWidth;
+  bouchonImg.classList.add('pop');
 }
 
-revealBtn.addEventListener('click', revealResult);
+// ----------- Déblocage admin -----------
+adminUnlock.addEventListener('click', () => {
+  const mdp = prompt("Entrez le mot de passe admin :");
+  if (mdp === "tonMotDePasseSecret123") {
+    unlockGame();
+    alert("Jeu débloqué avec succès ✅");
+  } else if (mdp) {
+    alert("❌ Mot de passe incorrect !");
+  }
+});
+
+// ----------- Démarrage -----------
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
+if (localStorage.getItem('hasPlayed')) lockGame();
 </script>
 </body>
 </html>
