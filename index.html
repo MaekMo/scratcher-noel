@@ -16,10 +16,9 @@
   body {
     margin: 0;
     font-family: "Inter", sans-serif;
-    background: url("noeltropical.jpg") no-repeat center center fixed;
-    background-size: contain;
-    background-color: #ffeac9;
-    background-blend-mode: lighten;
+    background: url("Prix2.PNG") no-repeat center center fixed;
+    background-size: cover;
+    background-color: #ffffff;
     color: #113028;
     overflow-x: hidden;
     display: flex;
@@ -38,7 +37,7 @@
   }
 
   .card {
-    background: rgba(255, 255, 255, 0.92);
+    background: rgba(255, 255, 255, 0.88);
     border-radius: 16px;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
     text-align: center;
@@ -51,19 +50,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
     margin-bottom: 4px;
   }
 
-  .logo img {
-    width: 70%;
-    max-width: 160px;
-  }
-
   video#bouchonVideo {
-    width: 60px;
+    width: 120px;
     height: auto;
-    border-radius: 8px;
+    border-radius: 12px;
     display: none;
   }
 
@@ -142,7 +135,7 @@
     .card { padding: 16px; }
     .scratch-area { height: 120px; }
     .prize-text { font-size: 16px; }
-    video#bouchonVideo { width: 45px; }
+    video#bouchonVideo { width: 100px; }
   }
 </style>
 </head>
@@ -151,8 +144,7 @@
     <div class="card">
 
       <div class="header">
-        <div class="logo"><img src="Prix2.PNG" alt="Logo MA EK MO"></div>
-        <video id="bouchonVideo" muted playsinline>
+        <video id="bouchonVideo" muted loop playsinline>
           <source src="bouchon2.mp4" type="video/mp4">
         </video>
       </div>
@@ -201,6 +193,8 @@ if (storedResult) {
   hasResult = true;
   revealBtn.disabled = true;
   canvas.style.pointerEvents = "none";
+  bouchonVideo.style.display = "block";
+  bouchonVideo.play().catch(() => {});
 }
 
 // ----------- Gestion du blocage après avoir joué -----------
@@ -288,10 +282,8 @@ function revealResult() {
 function playVideo() {
   bouchonVideo.style.display = "block";
   bouchonVideo.currentTime = 0;
+  bouchonVideo.loop = true;
   bouchonVideo.play().catch(() => {});
-  bouchonVideo.onended = () => {
-    setTimeout(() => bouchonVideo.style.display = "none", 500);
-  };
 }
 
 // ----------- Déblocage admin -----------
