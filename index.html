@@ -3,458 +3,273 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Grattage — Noël sous les tropiques</title>
+<title>Jeu de grattage – MA EK MO (Noël Tropical)</title>
 <style>
-  :root{
-    --bg1:#ffefba; /* sand */
-    --bg2:#fff1c9; /* light sand */
-    --accent:#ff6b6b; /* festive red */
-    --accent2:#00b5ad; /* turquoise */
-    --card:#fffdf8;
-    --text-dark:#1b2b2b;
-  }
-  html,body{height:100%;margin:0;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background: linear-gradient(180deg,var(--bg1),var(--bg2)); color:var(--text-dark);}
-  .scene{
-    min-height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:24px;
-    box-sizing:border-box;
-    background-image:
-      radial-gradient(circle at 20% 10%, rgba(255,255,255,0.15), transparent 20%),
-      linear-gradient(180deg, rgba(255,250,230,0.6), rgba(255,245,230,0.9));
+  :root {
+    --main-orange: #ff8a3d;
+    --main-red: #ff6b3a;
+    --gold-light: #fff1c7;
+    --gold-mid: #ffd46b;
+    --gold-dark: #d7b34a;
   }
 
-  .card{
-    width:360px;
-    max-width:95%;
-    background:linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.98));
-    border-radius:18px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-    padding:18px;
-    text-align:center;
-    position:relative;
-    overflow:hidden;
+  body {
+    margin: 0;
+    font-family: "Inter", sans-serif;
+    background: url("noeltropical.jpg") no-repeat center center fixed;
+    background-size: cover;
+    color: #113028;
+    overflow-x: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
   }
 
-  .header{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:12px;
-    margin-bottom:10px;
-  }
-  .logo{
-    display:flex;align-items:center;gap:10px;
-  }
-  .logo .title{font-weight:700;font-size:18px}
-  .subtitle{font-size:12px;color:#6b6b6b}
-
-  .beach-illustration{
-    height:100px; border-radius:12px; margin:8px 0 14px;
-    background: linear-gradient(180deg,#7ee0ff 0%, #a3f7d1 60%, #fff9d6 100%);
-    position:relative;
-    overflow:hidden;
-  }
-  .sun{position:absolute;right:18px;top:8px;font-size:36px; transform: rotate(-10deg);}
-  .palm{position:absolute;left:6px;bottom:-10px;font-size:60px; transform: rotate(-6deg); opacity:0.95}
-  .rum{position:absolute;right:20px;bottom:6px;font-size:28px}
-
-  .ticket{
-    margin:0 auto 12px; width:100%; max-width:320px; background:linear-gradient(180deg,#fffdfa,#fff5ef); border-radius:12px; padding:12px; box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-  }
-  .ticket .info{font-weight:600;color:var(--accent2); margin-bottom:6px}
-  .scratch-area{
-    position:relative; height:120px; border-radius:8px; overflow:hidden; background:
-      linear-gradient(135deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
-    display:flex; align-items:center; justify-content:center;
-  }
-  .prize-text{
-    font-size:18px; font-weight:700; position:absolute; z-index:1; text-align:center; padding:8px;
+  .wrap {
+    width: 100%;
+    max-width: 420px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
-  /* canvas overlay */
-  canvas#scratchCanvas{ position:absolute; inset:0; z-index:2; }
+  .card {
+    background: rgba(255, 255, 255, 0.92);
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    text-align: center;
+    width: 100%;
+    padding: 20px;
+    position: relative;
+  }
 
-  .controls{display:flex; gap:8px; justify-content:center; margin-top:10px}
-  button{cursor:pointer;border:0;padding:10px 12px;border-radius:10px;font-weight:600;background:linear-gradient(180deg,#fff,#f6f6f6); box-shadow:0 4px 10px rgba(0,0,0,0.06)}
-  .cta{background:linear-gradient(180deg,var(--accent),#ff4b4b); color:white; box-shadow: 0 6px 18px rgba(255,75,75,0.18)}
-  .muted{font-size:12px;color:#6c6c6c;margin-top:8px}
+  .logo img {
+    width: 70%;
+    max-width: 200px;
+    margin-bottom: 8px;
+  }
 
-  .admin-bar{margin-top:12px;border-top:1px dashed rgba(0,0,0,0.06);padding-top:10px;display:flex;gap:8px;align-items:center;justify-content:center}
-  .admin-input{padding:8px;border-radius:8px;border:1px solid #eee}
+  .subtitle {
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
 
-  .footer{font-size:12px;color:#6b6b6b;margin-top:14px}
-  .sparkle{position:absolute;left:10px;top:8px;font-size:20px;opacity:0.9}
+  .player-number {
+    font-size: 14px;
+    color: #444;
+    margin-bottom: 10px;
+  }
 
-  /* responsive */
-  @media (max-width:380px){ .card{padding:14px} .ticket{padding:10px} .prize-text{font-size:16px} }
+  .ticket {
+    background: linear-gradient(180deg, #fffdfa, #fff7f0);
+    border-radius: 12px;
+    padding: 12px;
+    margin-top: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  }
+
+  .scratch-area {
+    position: relative;
+    height: 140px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .prize-text {
+    font-size: 18px;
+    font-weight: 800;
+    z-index: 1;
+    color: #113028;
+    position: absolute;
+    padding: 0 8px;
+  }
+
+  canvas#scratchCanvas {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    touch-action: none;
+  }
+
+  button {
+    cursor: pointer;
+    border: 0;
+    padding: 12px 18px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 16px;
+    margin-top: 10px;
+    background: linear-gradient(180deg, var(--main-orange), var(--main-red));
+    color: white;
+    width: 100%;
+    box-shadow: 0 6px 14px rgba(255, 107, 58, 0.3);
+  }
+
+  .bottle-wrap {
+    position: absolute;
+    right: 16px;
+    top: -35px;
+    width: 60px;
+    height: 100px;
+    pointer-events: none;
+  }
+
+  .bottle {
+    position: absolute;
+    bottom: 0;
+    width: 50px;
+    height: 80px;
+    background: linear-gradient(to top, #e9fff9, #c2f0e6);
+    border: 2px solid #8fd6c4;
+    border-radius: 10px;
+  }
+
+  .cork {
+    width: 16px;
+    height: 16px;
+    background: #b87333;
+    border-radius: 4px;
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .cork.pop {
+    animation: pop 1s ease forwards;
+  }
+
+  @keyframes pop {
+    0% { transform: translateX(-50%) translateY(0); opacity: 1; }
+    50% { transform: translateX(-60%) translateY(-70px) rotate(-20deg); opacity: 1; }
+    100% { transform: translateX(-70%) translateY(-120px) rotate(-30deg); opacity: 0; }
+  }
+
+  @media (max-width: 480px) {
+    .card { padding: 16px; }
+    .scratch-area { height: 120px; }
+    .prize-text { font-size: 16px; }
+  }
 </style>
 </head>
 <body>
-<div class="scene">
-  <div class="card" role="main" aria-label="Jeu de grattage Noël tropical">
-    <div class="header">
-      <div class="logo">
-        <div style="font-size:28px">🌴🎄</div>
-        <div>
-          <div class="title">Noël sous les tropiques</div>
-          <div class="subtitle">Gratte et découvre ton sort... (1 partie / appareil)</div>
+  <div class="wrap">
+    <div class="card">
+      <div class="logo"><img src="Prix2.PNG" alt="Logo MA EK MO"></div>
+      <div class="subtitle">MA EK MO — Rhums arrangés & punchs</div>
+      <div class="player-number" id="playerNumber"></div>
+
+      <div class="ticket">
+        <div class="scratch-area" id="scratchArea">
+          <div class="prize-text" id="prizeText">Gratte ici 🎄</div>
+          <canvas id="scratchCanvas"></canvas>
         </div>
-      </div>
-      <div class="sparkle">✨</div>
-    </div>
 
-    <div class="beach-illustration" aria-hidden="true">
-      <div class="sun">☀️</div>
-      <div class="palm">🌴</div>
-      <div class="rum">🍹</div>
-    </div>
-
-    <div class="ticket">
-      <div class="info">Ticket mystère — 200 tickets · 5 gagnants</div>
-
-      <div class="scratch-area" id="scratchCard">
-        <div class="prize-text" id="prizeText">Gratte ici</div>
-        <canvas id="scratchCanvas"></canvas>
+        <button id="revealBtn">Révéler</button>
       </div>
 
-      <div class="controls">
-        <button id="revealBtn" class="cta">Révéler</button>
-        <button id="helpBtn">Comment gratter ?</button>
+      <div class="bottle-wrap" id="bottleAnim">
+        <div class="bottle"></div>
+        <div class="cork" id="cork"></div>
       </div>
-
-      <div class="muted" id="statusText"></div>
-
-      <div class="admin-bar" id="adminBar">
-        <input id="adminPwd" class="admin-input" placeholder="Mot de passe admin" type="password" />
-        <button id="adminBtn">Entrer (admin)</button>
-      </div>
-
-      <div id="adminPanel" style="display:none; margin-top:10px;">
-        <div style="display:flex; gap:8px; justify-content:center; margin-bottom:8px;">
-          <button id="regenPool">Regénérer la pool</button>
-          <button id="resetAll">Réinitialiser tout (tests)</button>
-        </div>
-        <div style="font-size:12px;color:#555">Utilise ces outils avec précaution. La regénération redéfinit aléatoirement les 5 tickets gagnants pour ce navigateur.</div>
-      </div>
-
-    </div>
-
-    <div class="footer">
-      <div id="infoAdmin" style="margin-bottom:6px">Admin: mot de passe requis pour autoriser à rejouer / régénérer.</div>
-      <div>Design : Noël tropical — palmiers, plage, rhum & soleil 🌞🍹</div>
     </div>
   </div>
-</div>
 
 <script>
-/* ========== CONFIG ========== */
-const TOTAL_TICKETS = 200;   // nombre total de tickets
-const TOTAL_WINNERS = 5;     // nombre total de gagnants
-let ADMIN_PASSWORD = 'NoelTropical2025'; // change ici si tu veux (ou édite après déploiement)
-
-/* clefs localStorage */
-const STORAGE_POOL_KEY = 'scratcher_pool_v1';
-const STORAGE_PLAYED_KEY = 'scratcher_played_v1';
-/* ============================ */
-
-/* utilitaires */
-function randInt(n){ return Math.floor(Math.random()*n); }
-
-/* pool management:
-   pool is array length TOTAL_TICKETS
-   values:
-     0 = lose (non utilisé)
-     1 = win (non utilisé)
-     2 = used lose
-     3 = used win
-*/
-function createPool(){
-  const arr = new Array(TOTAL_TICKETS).fill(0);
-  // choose TOTAL_WINNERS unique indices
-  let chosen = new Set();
-  while(chosen.size < TOTAL_WINNERS){
-    chosen.add(randInt(TOTAL_TICKETS));
-  }
-  chosen.forEach(i => arr[i] = 1);
-  localStorage.setItem(STORAGE_POOL_KEY, JSON.stringify(arr));
-  return arr;
-}
-function loadPool(){
-  const raw = localStorage.getItem(STORAGE_POOL_KEY);
-  if(!raw) return createPool();
-  try{
-    const arr = JSON.parse(raw);
-    if(!Array.isArray(arr) || arr.length !== TOTAL_TICKETS) return createPool();
-    return arr;
-  }catch(e){ return createPool(); }
-}
-function savePool(pool){ localStorage.setItem(STORAGE_POOL_KEY, JSON.stringify(pool)); }
-
-function getUnusedTicketIndex(pool){
-  const unused = [];
-  for(let i=0;i<pool.length;i++){
-    if(pool[i] === 0 || pool[i] === 1) unused.push(i);
-  }
-  if(unused.length===0) return -1;
-  return unused[randInt(unused.length)];
-}
-
-/* admin check (simple) */
-function checkAdmin(pwd){ return pwd === ADMIN_PASSWORD; }
-
-/* UI & scratch logic */
 const canvas = document.getElementById('scratchCanvas');
-const scratchArea = document.getElementById('scratchCard');
-const prizeTextEl = document.getElementById('prizeText');
+const ctx = canvas.getContext('2d');
+const prizeText = document.getElementById('prizeText');
 const revealBtn = document.getElementById('revealBtn');
-const helpBtn = document.getElementById('helpBtn');
-const statusText = document.getElementById('statusText');
-const adminBtn = document.getElementById('adminBtn');
-const adminPwd = document.getElementById('adminPwd');
-const adminPanel = document.getElementById('adminPanel');
-const regenPoolBtn = document.getElementById('regenPool');
-const resetAllBtn = document.getElementById('resetAll');
+const scratchArea = document.getElementById('scratchArea');
+const cork = document.getElementById('cork');
+const playerNumberEl = document.getElementById('playerNumber');
 
-let ctx, isDrawing=false, lastPos={x:0,y:0};
-let pool = loadPool();
-let chosenTicketIndex = null;
-let chosenTicketStatus = null; // 0/1/2/3
+let isDrawing = false;
+let hasResult = false;
 
-function resizeCanvas(){
-  const rect = scratchArea.getBoundingClientRect();
-  canvas.width = rect.width;
-  canvas.height = rect.height;
-  drawOverlay();
+// ----------- Gestion du numéro de joueur -----------
+let totalPlayers = parseInt(localStorage.getItem('totalPlayers') || '0', 10);
+totalPlayers++;
+localStorage.setItem('totalPlayers', totalPlayers);
+playerNumberEl.textContent = `Joueur n°${totalPlayers}`;
+
+// ----------- Initialisation du canvas doré -----------
+function resizeCanvas() {
+  canvas.width = scratchArea.offsetWidth;
+  canvas.height = scratchArea.offsetHeight;
+  drawGold();
 }
-function drawOverlay(){
-  if(!ctx) return;
-  // silver scratch overlay
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  ctx.fillStyle = '#B4B4B4';
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-  // subtle noise effect using globalAlpha rectangles
-  ctx.globalAlpha = 0.06;
-  for(let i=0;i<200;i++){
-    ctx.fillRect(Math.random()*canvas.width, Math.random()*canvas.height, Math.random()*8+1, Math.random()*8+1);
-  }
-  ctx.globalAlpha = 1;
-  // add subtle diagonal shine
-  const g = ctx.createLinearGradient(0,0, canvas.width, canvas.height);
-  g.addColorStop(0,'rgba(255,255,255,0.06)');
-  g.addColorStop(1,'rgba(255,255,255,0)');
+function drawGold() {
+  const g = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+  g.addColorStop(0, '#fff1c7');
+  g.addColorStop(0.5, '#ffd46b');
+  g.addColorStop(1, '#d7b34a');
   ctx.fillStyle = g;
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-  // set composite
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.globalCompositeOperation = 'destination-out';
+  ctx.lineWidth = 30;
+  ctx.lineCap = 'round';
 }
-function pointerPos(e){
+
+// ----------- Gestion du grattage -----------
+function pointer(e) {
   const rect = canvas.getBoundingClientRect();
   const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
   const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-  return {x,y};
+  return { x, y };
 }
-function startDraw(e){
-  if(isPlayed()) return;
-  isDrawing = true;
-  lastPos = pointerPos(e);
-  drawPoint(lastPos.x, lastPos.y);
-  e.preventDefault();
-}
-function moveDraw(e){
-  if(!isDrawing) return;
-  const p = pointerPos(e);
-  ctx.lineWidth = Math.max(canvas.width, canvas.height) * 0.06; // large brush
-  ctx.lineCap = 'round';
+
+canvas.addEventListener('mousedown', e => { if (!hasResult) { isDrawing = true; scratch(e); } });
+canvas.addEventListener('mousemove', e => { if (isDrawing && !hasResult) scratch(e); });
+canvas.addEventListener('mouseup', () => isDrawing = false);
+canvas.addEventListener('touchstart', e => { if (!hasResult) { isDrawing = true; scratch(e); } });
+canvas.addEventListener('touchmove', e => { if (isDrawing && !hasResult) scratch(e); });
+canvas.addEventListener('touchend', () => isDrawing = false);
+
+function scratch(e) {
+  const pos = pointer(e);
   ctx.beginPath();
-  ctx.moveTo(lastPos.x, lastPos.y);
-  ctx.lineTo(p.x, p.y);
-  ctx.stroke();
-  lastPos = p;
-  e.preventDefault();
-  if(getScratchedPercentage() > 0.60) finishReveal();
-}
-function endDraw(e){
-  isDrawing = false;
-  e.preventDefault();
-}
-function drawPoint(x,y){
-  ctx.beginPath();
-  ctx.arc(x,y, Math.max(canvas.width, canvas.height)*0.03, 0, Math.PI*2);
+  ctx.arc(pos.x, pos.y, 18, 0, Math.PI * 2);
   ctx.fill();
+  if (getScratchedRatio() > 0.5 && !hasResult) revealResult();
 }
-function getScratchedPercentage(){
-  const img = ctx.getImageData(0,0,canvas.width,canvas.height);
-  const pixels = img.data;
+
+function getScratchedRatio() {
+  const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
   let clear = 0;
-  for(let i=3;i<pixels.length;i+=4){
-    if(pixels[i] === 0) clear++;
-  }
-  const total = canvas.width * canvas.height;
-  return clear/total;
+  for (let i = 3; i < pixels.length; i += 4) if (pixels[i] === 0) clear++;
+  return clear / (canvas.width * canvas.height);
 }
 
-function revealImmediate(){ // reveal without scratching
-  if(isPlayed()) return;
-  finishReveal();
-}
-
-function finishReveal(){
-  if(isPlayed()) return;
-  // mark as played
-  markPlayed(true);
-
-  // choose a ticket index from unused pool
-  pool = loadPool();
-  const idx = getUnusedTicketIndex(pool);
-  if(idx === -1){
-    // pool exhausted
-    chosenTicketStatus = 0;
-    prizeTextEl.textContent = 'Plus de tickets disponibles';
-    statusText.textContent = 'La pool est épuisée. Contacte l’admin.';
-    return;
+// ----------- Résultat du ticket -----------
+function revealResult() {
+  hasResult = true;
+  const win = Math.random() < (5/200);
+  if (win) {
+    prizeText.textContent = '🎉 Félicitations tu as gagné !';
+  } else {
+    prizeText.textContent = '👏🏾 Bravo tu obtiens une réduction de -10% dès 30€ d\'achat.';
   }
-  chosenTicketIndex = idx;
-  const isWin = pool[idx] === 1;
-
-  // mark used
-  pool[idx] = isWin ? 3 : 2;
-  savePool(pool);
-
-  // show message
-  if(isWin){
-    prizeTextEl.textContent = '🎉 Félicitations tu as gagné';
-    statusText.textContent = `Ticket #${idx+1} — Gagnant !`;
-  }else{
-    prizeTextEl.textContent = '😢 Dommage tu as perdu';
-    statusText.textContent = `Ticket #${idx+1} — Essaye une autre fois (si autorisé).`;
-  }
-
-  // fully clear the overlay to show result
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  ctx.globalCompositeOperation = 'source-over';
-  // draw a subtle confetti for win
-  if(isWin){
-    // small confetti circles
-    for(let i=0;i<28;i++){
-      ctx.beginPath();
-      ctx.fillStyle = ['#ff6b6b','#ffd166','#06d6a0','#118ab2'][i%4];
-      ctx.arc(Math.random()*canvas.width, Math.random()*canvas.height, Math.random()*6+2,0,Math.PI*2);
-      ctx.fill();
-    }
-  }
+  animateCork();
 }
 
-/* played flag */
-function isPlayed(){ return localStorage.getItem(STORAGE_PLAYED_KEY) === '1'; }
-function markPlayed(v){
-  if(v) localStorage.setItem(STORAGE_PLAYED_KEY,'1');
-  else localStorage.removeItem(STORAGE_PLAYED_KEY);
-  updateUI();
+// ----------- Animation bouchon -----------
+function animateCork() {
+  cork.classList.remove('pop');
+  void cork.offsetWidth;
+  cork.classList.add('pop');
 }
 
-/* UI update */
-function updateUI(){
-  if(isPlayed()){
-    revealBtn.disabled = true;
-    statusText.style.opacity = 1;
-    const poolNow = loadPool();
-    const winnersLeft = poolNow.filter(x => x === 1).length;
-    document.getElementById('infoAdmin').textContent = `Gagnants restants (pour ce navigateur) : ${winnersLeft}`;
-  }else{
-    revealBtn.disabled = false;
-    document.getElementById('infoAdmin').textContent = 'Admin: mot de passe requis pour autoriser à rejouer / régénérer.';
-  }
-}
-
-/* admin actions */
-adminBtn.addEventListener('click', () => {
-  const val = adminPwd.value || '';
-  if(checkAdmin(val)){
-    adminPanel.style.display = 'block';
-    adminPwd.value = '';
-    statusText.textContent = 'Mode admin activé (actions pour ce navigateur).';
-  }else{
-    alert('Mot de passe admin incorrect.');
-  }
-});
-
-regenPoolBtn.addEventListener('click', () => {
-  if(!confirm('Regénérer la pool va redéfinir aléatoirement les tickets gagnants pour CE navigateur. Continuer ?')) return;
-  pool = createPool();
-  markPlayed(false);
-  drawOverlay();
-  statusText.textContent = 'Pool regénérée.';
-  updateUI();
-});
-
-resetAllBtn.addEventListener('click', () => {
-  if(!confirm('Réinitialiser tout supprimera les données (pool + played) pour CE navigateur. Continuer ?')) return;
-  localStorage.removeItem(STORAGE_POOL_KEY);
-  localStorage.removeItem(STORAGE_PLAYED_KEY);
-  pool = loadPool();
-  drawOverlay();
-  statusText.textContent = 'Réinitialisé.';
-  updateUI();
-});
-
-/* events */
+revealBtn.addEventListener('click', revealResult);
 window.addEventListener('resize', resizeCanvas);
-window.addEventListener('load', () => {
-  ctx = canvas.getContext('2d', { willReadFrequently: true });
-  resizeCanvas();
-  pool = loadPool();
-  // initial text
-  prizeTextEl.textContent = isPlayed() ? 'Merci d\'avoir joué' : 'Gratte ici';
-  updateUI();
-});
-
-/* pointer events for canvas */
-canvas.addEventListener('mousedown', startDraw);
-canvas.addEventListener('touchstart', startDraw, {passive:false});
-window.addEventListener('mousemove', moveDraw);
-window.addEventListener('touchmove', moveDraw, {passive:false});
-window.addEventListener('mouseup', endDraw);
-window.addEventListener('touchend', endDraw);
-
-/* reveal button */
-revealBtn.addEventListener('click', () => {
-  if(confirm('Voulez-vous révéler le ticket maintenant ?')) revealImmediate();
-});
-
-/* help */
-helpBtn.addEventListener('click', () => alert('Gratte la zone grise avec la souris ou ton doigt. Quand une grande partie est grattée, le résultat s’affichera.'));
-
-/* scratch overlay draw initial stroke settings */
-function initCanvasDrawing(){
-  if(!ctx) return;
-  ctx.globalCompositeOperation = 'destination-out';
-  ctx.lineWidth = Math.max(canvas.width, canvas.height) * 0.06;
-  ctx.lineCap = 'round';
-  ctx.strokeStyle = 'rgba(0,0,0,1)';
-}
-setTimeout(initCanvasDrawing, 120);
-
-/* protect replay: player can only replay if admin resets played flag on their device.
-   Provide a small global keyboard shortcut for admin quick access: ctrl+shift+a opens admin input.
-*/
-window.addEventListener('keydown', (e) => {
-  if(e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'a'){
-    adminPwd.focus();
-  }
-});
-
-/* initial draw overlay after small delay */
-setTimeout(() => {
-  if(ctx){
-    ctx.globalCompositeOperation = 'destination-out';
-    drawOverlay();
-  }
-}, 150);
-
+resizeCanvas();
 </script>
 </body>
 </html>
-<!-- test -->
