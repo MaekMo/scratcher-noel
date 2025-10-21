@@ -1,305 +1,254 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Jeu de grattage – MA EK MO (Noël Tropical)</title>
-<style>
-  :root {
-    --main-orange: #ff8a3d;
-    --main-red: #ff6b3a;
-    --gold-light: #fff1c7;
-    --gold-mid: #ffd46b;
-    --gold-dark: #d7b34a;
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MA EK MO – Jeu de grattage</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      background: url('Prix2.PNG') center/cover no-repeat fixed;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      color: #fff;
+    }
 
-  body {
-    margin: 0;
-    font-family: "Inter", sans-serif;
-    background: url("Prix2.PNG") no-repeat center center fixed;
-    background-size: cover;
-    background-color: #ffffff;
-    color: #113028;
-    overflow-x: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-  }
+    .container {
+      text-align: center;
+      background-color: rgba(0, 0, 0, 0.5);
+      border-radius: 20px;
+      padding: 20px;
+      width: 90%;
+      max-width: 420px;
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    }
 
-  .wrap {
-    width: 100%;
-    max-width: 420px;
-    padding: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+    h1 {
+      font-size: 1.8em;
+      margin-bottom: 5px;
+    }
 
-  .card {
-    background: rgba(255, 255, 255, 0.88);
-    border-radius: 16px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-    text-align: center;
-    width: 100%;
-    padding: 20px;
-    position: relative;
-  }
+    .video-container {
+      display: flex;
+      justify-content: center;
+      margin: 10px 0;
+    }
 
-  .header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 4px;
-  }
+    video {
+      width: 140px;
+      height: auto;
+      border-radius: 10px;
+    }
 
-  video#bouchonVideo {
-    width: 120px;
-    height: auto;
-    border-radius: 12px;
-    display: none;
-  }
+    canvas {
+      border-radius: 15px;
+      margin-top: 15px;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    }
 
-  .subtitle {
-    font-weight: 600;
-    margin-bottom: 4px;
-  }
+    .result {
+      margin-top: 20px;
+      font-size: 1.1em;
+      font-weight: bold;
+      color: gold;
+    }
 
-  .player-number {
-    font-size: 14px;
-    color: #444;
-    margin-bottom: 10px;
-  }
+    .admin {
+      margin-top: 20px;
+      font-size: 0.9em;
+      color: #eee;
+    }
 
-  .ticket {
-    background: linear-gradient(180deg, #fffdfa, #fff7f0);
-    border-radius: 12px;
-    padding: 12px;
-    margin-top: 8px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  }
+    button {
+      background-color: gold;
+      color: black;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 14px;
+      margin-top: 10px;
+      cursor: pointer;
+      font-weight: bold;
+    }
 
-  .scratch-area {
-    position: relative;
-    height: 140px;
-    border-radius: 10px;
-    overflow: hidden;
-    background: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .prize-text {
-    font-size: 18px;
-    font-weight: 800;
-    z-index: 1;
-    color: #113028;
-    position: absolute;
-    padding: 0 8px;
-    text-align: center;
-  }
-
-  canvas#scratchCanvas {
-    position: absolute;
-    inset: 0;
-    z-index: 3;
-    touch-action: none;
-  }
-
-  button {
-    cursor: pointer;
-    border: 0;
-    padding: 12px 18px;
-    border-radius: 12px;
-    font-weight: 700;
-    font-size: 16px;
-    margin-top: 10px;
-    background: linear-gradient(180deg, var(--main-orange), var(--main-red));
-    color: white;
-    width: 100%;
-    box-shadow: 0 6px 14px rgba(255, 107, 58, 0.3);
-  }
-
-  .admin-btn {
-    margin-top: 10px;
-    font-size: 14px;
-    background: none;
-    color: #444;
-    border: none;
-    text-decoration: underline;
-    cursor: pointer;
-  }
-
-  @media (max-width: 480px) {
-    .card { padding: 16px; }
-    .scratch-area { height: 120px; }
-    .prize-text { font-size: 16px; }
-    video#bouchonVideo { width: 100px; }
-  }
-</style>
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 1.3em;
+      }
+      .container {
+        width: 95%;
+        padding: 15px;
+      }
+      video {
+        width: 100px;
+      }
+    }
+  </style>
 </head>
+
 <body>
-  <div class="wrap">
-    <div class="card">
+  <div class="container">
+    <h1>MA EK MO — Rhums arrangés & punchs</h1>
+    <p id="player-number">Chargement...</p>
 
-      <div class="header">
-        <video id="bouchonVideo" muted loop playsinline>
-          <source src="bouchon2.mp4" type="video/mp4">
-        </video>
-      </div>
+    <div class="video-container">
+      <video id="bouchon-video" src="bouchon2.mp4" muted loop></video>
+    </div>
 
-      <div class="subtitle">MA EK MO — Rhums arrangés & punchs</div>
-      <div class="player-number" id="playerNumber"></div>
+    <canvas id="scratch-card" width="300" height="150"></canvas>
+    <div id="result" class="result"></div>
 
-      <div class="ticket">
-        <div class="scratch-area" id="scratchArea">
-          <div class="prize-text" id="prizeText">Gratte ici 🎄</div>
-          <canvas id="scratchCanvas"></canvas>
-        </div>
-
-        <button id="revealBtn">Révéler</button>
-      </div>
-
-      <button class="admin-btn" id="adminUnlock">🔓 Débloquer (admin)</button>
+    <div class="admin">
+      <button id="reset-btn">🔒 Réinitialiser le jeu</button>
     </div>
   </div>
 
-<script>
-const canvas = document.getElementById('scratchCanvas');
-const ctx = canvas.getContext('2d');
-const prizeText = document.getElementById('prizeText');
-const revealBtn = document.getElementById('revealBtn');
-const scratchArea = document.getElementById('scratchArea');
-const playerNumberEl = document.getElementById('playerNumber');
-const adminUnlock = document.getElementById('adminUnlock');
-const bouchonVideo = document.getElementById('bouchonVideo');
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
 
-let isDrawing = false;
-let hasResult = false;
+    const firebaseConfig = {
+      apiKey: "AIzaSyAZcpcC_7l6wYN4SJUGa9dBbEa_ekV1n20",
+      authDomain: "ma-ek-mo-grattage.firebaseapp.com",
+      projectId: "ma-ek-mo-grattage",
+      storageBucket: "ma-ek-mo-grattage.firebasestorage.app",
+      messagingSenderId: "478221366203",
+      appId: "1:478221366203:web:ffb64fe9cbb7dc0aa20a9e",
+      measurementId: "G-BZSKRGV3PS"
+    };
 
-// ----------- Gestion du numéro de joueur -----------
-let totalPlayers = parseInt(localStorage.getItem('totalPlayers') || '0', 10);
-if (!localStorage.getItem('hasPlayed')) {
-  totalPlayers++;
-  localStorage.setItem('totalPlayers', totalPlayers);
-}
-playerNumberEl.textContent = `Joueur n°${totalPlayers}`;
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-// ----------- Chargement du résultat précédent -----------
-const storedResult = localStorage.getItem('lastResult');
-if (storedResult) {
-  prizeText.textContent = storedResult;
-  hasResult = true;
-  revealBtn.disabled = true;
-  canvas.style.pointerEvents = "none";
-  bouchonVideo.style.display = "block";
-  bouchonVideo.play().catch(() => {});
-}
+    const canvas = document.getElementById("scratch-card");
+    const ctx = canvas.getContext("2d");
+    const resultEl = document.getElementById("result");
+    const playerNumberEl = document.getElementById("player-number");
+    const bouchonVideo = document.getElementById("bouchon-video");
 
-// ----------- Gestion du blocage après avoir joué -----------
-function lockGame() {
-  hasResult = true;
-  localStorage.setItem('hasPlayed', 'true');
-  revealBtn.disabled = true;
-  canvas.style.pointerEvents = "none";
-}
+    let isDrawing = false;
+    let hasPlayed = localStorage.getItem("hasPlayed") === "true";
+    let lastResult = localStorage.getItem("lastResult");
+    let playerNumber = localStorage.getItem("playerNumber");
 
-function unlockGame() {
-  localStorage.removeItem('hasPlayed');
-  localStorage.removeItem('lastResult');
-  revealBtn.disabled = false;
-  canvas.style.pointerEvents = "auto";
-  prizeText.textContent = "Gratte ici 🎄";
-  hasResult = false;
-  bouchonVideo.style.display = "none";
-  drawGold();
-}
+    const results = [
+      "👏🏾 Bravo tu obtiens une réduction de -10% dès 30€ d'achat.",
+      "👏🏾 Bravo tu obtiens une réduction de -10% dès 30€ d'achat.",
+      "👏🏾 Bravo tu obtiens une réduction de -10% dès 30€ d'achat.",
+      "👏🏾 Bravo tu obtiens une réduction de -10% dès 30€ d'achat.",
+      "👏🏾 Bravo tu obtiens une réduction de -10% dès 30€ d'achat.",
+      "😢 Dommage tu as perdu."
+    ];
 
-// ----------- Initialisation du canvas doré -----------
-function resizeCanvas() {
-  canvas.width = scratchArea.offsetWidth;
-  canvas.height = scratchArea.offsetHeight;
-  drawGold();
-}
-function drawGold() {
-  const g = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-  g.addColorStop(0, '#fff1c7');
-  g.addColorStop(0.5, '#ffd46b');
-  g.addColorStop(1, '#d7b34a');
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.globalCompositeOperation = 'destination-out';
-  ctx.lineWidth = 30;
-  ctx.lineCap = 'round';
-}
+    // 🎨 Couche dorée à gratter
+    function initScratch() {
+      ctx.fillStyle = "gold";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.globalCompositeOperation = "destination-out";
+    }
 
-// ----------- Gestion du grattage -----------
-function pointer(e) {
-  const rect = canvas.getBoundingClientRect();
-  const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-  const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-  return { x, y };
-}
+    // 🎁 Révéler le résultat
+    async function revealResult() {
+      if (hasPlayed) return;
 
-canvas.addEventListener('mousedown', e => { if (!hasResult) { isDrawing = true; scratch(e); } });
-canvas.addEventListener('mousemove', e => { if (isDrawing && !hasResult) scratch(e); });
-canvas.addEventListener('mouseup', () => isDrawing = false);
-canvas.addEventListener('touchstart', e => { if (!hasResult) { isDrawing = true; scratch(e); } });
-canvas.addEventListener('touchmove', e => { if (isDrawing && !hasResult) scratch(e); });
-canvas.addEventListener('touchend', () => isDrawing = false);
+      const snapshot = await getDocs(collection(db, "joueurs"));
+      const totalPlayers = snapshot.size + 1;
+      playerNumber = totalPlayers;
+      playerNumberEl.textContent = "Joueur n°" + totalPlayers;
 
-function scratch(e) {
-  const pos = pointer(e);
-  ctx.beginPath();
-  ctx.arc(pos.x, pos.y, 18, 0, Math.PI * 2);
-  ctx.fill();
-  if (getScratchedRatio() > 0.5 && !hasResult) revealResult();
-}
+      const resultText = results[Math.floor(Math.random() * results.length)];
+      resultEl.textContent = resultText;
+      bouchonVideo.play();
 
-function getScratchedRatio() {
-  const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-  let clear = 0;
-  for (let i = 3; i < pixels.length; i += 4) if (pixels[i] === 0) clear++;
-  return clear / (canvas.width * canvas.height);
-}
+      await addDoc(collection(db, "joueurs"), {
+        numero: totalPlayers,
+        resultat: resultText,
+        date: new Date().toISOString()
+      });
 
-// ----------- Résultat du ticket -----------
-function revealResult() {
-  hasResult = true;
-  const win = Math.random() < (5/200);
-  const resultText = win
-    ? '🎉 Félicitations tu as gagné !'
-    : '👏🏾 Bravo tu obtiens une réduction de -10% dès 30€ d\'achat.';
-  prizeText.textContent = resultText;
-  localStorage.setItem('lastResult', resultText);
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  playVideo();
-  lockGame();
-}
+      // Envoi du mail de notification
+      sendNotification(totalPlayers, resultText, new Date().toISOString());
 
-// ----------- Animation vidéo -----------
-function playVideo() {
-  bouchonVideo.style.display = "block";
-  bouchonVideo.currentTime = 0;
-  bouchonVideo.loop = true;
-  bouchonVideo.play().catch(() => {});
-}
+      localStorage.setItem("hasPlayed", "true");
+      localStorage.setItem("lastResult", resultText);
+      localStorage.setItem("playerNumber", totalPlayers);
+      hasPlayed = true;
 
-// ----------- Déblocage admin -----------
-adminUnlock.addEventListener('click', () => {
-  const mdp = prompt("Entrez le mot de passe admin :");
-  if (mdp === "tonMotDePasseSecret123") {
-    unlockGame();
-    alert("Jeu débloqué avec succès ✅");
-  } else if (mdp) {
-    alert("❌ Mot de passe incorrect !");
-  }
-});
+      canvas.style.pointerEvents = "none";
+    }
 
-// ----------- Démarrage -----------
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
-</script>
+    canvas.addEventListener("mousedown", () => { isDrawing = true; });
+    canvas.addEventListener("mouseup", () => { isDrawing = false; });
+    canvas.addEventListener("mousemove", scratch);
+    canvas.addEventListener("touchstart", () => { isDrawing = true; });
+    canvas.addEventListener("touchend", () => { isDrawing = false; });
+    canvas.addEventListener("touchmove", scratch);
+
+    function scratch(e) {
+      if (!isDrawing || hasPlayed) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+      const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+      ctx.beginPath();
+      ctx.arc(x, y, 20, 0, Math.PI * 2);
+      ctx.fill();
+      if (Math.random() < 0.05) revealResult();
+    }
+
+    // 📨 Envoi EmailJS
+    function sendNotification(numero, resultat, dateIso) {
+      const serviceId = 'service_cqjooc5';
+      const templateId = 'template_ct2ucqj';
+      const userId = '1P7PupUaqiHbW50OZ';
+
+      return fetch('https://api.emailjs.com/api/v1.0/email/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          service_id: serviceId,
+          template_id: templateId,
+          user_id: userId,
+          template_params: { numero: String(numero), resultat, date: dateIso }
+        })
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('Erreur EmailJS: ' + res.status);
+        return res.json();
+      })
+      .catch(err => console.error('Email non envoyé :', err));
+    }
+
+    // 🔄 Réinitialiser le jeu (admin)
+    const resetBtn = document.getElementById("reset-btn");
+    resetBtn.addEventListener("click", async () => {
+      const pass = prompt("Mot de passe admin requis :");
+      if (pass !== "maekmo2025") return alert("Mot de passe incorrect ❌");
+      const docsSnap = await getDocs(collection(db, "joueurs"));
+      docsSnap.forEach(async d => await deleteDoc(doc(db, "joueurs", d.id)));
+      localStorage.clear();
+      alert("✅ Jeu réinitialisé !");
+      location.reload();
+    });
+
+    // 🚀 Démarrage
+    window.onload = async () => {
+      if (hasPlayed) {
+        resultEl.textContent = lastResult;
+        playerNumberEl.textContent = "Joueur n°" + (playerNumber || "?");
+        bouchonVideo.play();
+        canvas.style.pointerEvents = "none";
+      } else {
+        const snapshot = await getDocs(collection(db, "joueurs"));
+        playerNumberEl.textContent = "Prochain joueur : " + (snapshot.size + 1);
+      }
+      initScratch();
+    };
+  </script>
 </body>
 </html>
