@@ -92,6 +92,7 @@
       border-radius:8px;
       cursor:pointer;
       font-weight:bold;
+      margin:5px;
     }
 
     @media(max-width:600px){
@@ -118,22 +119,22 @@
     </div>
 
     <div class="admin">
-      <button id="reset-btn">🔒 Réinitialiser le jeu</button>
+      <button id="reset-btn">🔒 Réinitialiser le jeu (local)</button>
+      <button id="full-reset-btn">🔥 Réinitialiser complètement</button>
+      <button onclick="window.location='admin.html'">📊 Voir page admin</button>
     </div>
   </div>
 
   <!-- 📧 EmailJS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
   <script>
-    (function() {
-      emailjs.init("1P7PupUaqiHbW50OZ"); // ton user_id
-    })();
+    (function() { emailjs.init("1P7PupUaqiHbW50OZ"); })();
   </script>
 
   <!-- 🔥 Firebase + Jeu -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAZcpcC_7l6wYN4SJUGa9dBbEa_ekV1n20",
@@ -176,7 +177,6 @@
         return;
       }
 
-      // Couche dorée à gratter
       ctx.fillStyle = "#d4af37";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.globalCompositeOperation = "destination-out";
@@ -210,39 +210,30 @@
       hasPlayed = true;
       localStorage.setItem("hasPlayed", "true");
 
-      // Tirage aléatoire (5 gagnants sur 200)
       const isWinner = Math.random() < 5 / 200;
       const choice = isWinner
         ? "🎉 Félicitations tu as gagné !"
         : "👏🏾 Bravo tu obtiens une réduction de -10% dès 30€ d'achat.";
 
-      // Affichage du résultat avec effet de fondu
       resultDiv.textContent = choice;
       resultDiv.classList.add("visible");
       localStorage.setItem("resultat", choice);
 
-      // Lance la vidéo
       video.style.display = "block";
       video.play();
 
-      // Enregistre dans Firestore
       await addDoc(collection(db, "joueurs"), {
         numero: playerIndex,
         resultat: choice,
         date: new Date().toISOString(),
       });
 
-      // Envoie l’email
-      emailjs
-        .send("service_cqjooc5", "template_ct2ucqj", {
+      emailjs.send("service_cqjooc5", "template_ct2ucqj", {
           to_name: "Admin MA EK MO",
           message: `Le joueur n°${playerIndex} a joué.\nRésultat : ${choice}`,
           reply_to: "contact@maekmo.com",
-        })
-        .then(() => console.log("✅ Email envoyé"))
-        .catch((err) => console.error("❌ Erreur EmailJS :", err));
+      });
 
-      // Désactive le grattage
       canvas.removeEventListener("mousemove", scratch);
       canvas.removeEventListener("touchmove", scratch);
     }
@@ -258,11 +249,19 @@
       const pass = prompt("🔑 Entrez le mot de passe admin :");
       if (pass === "maekmo2025") {
         localStorage.clear();
-        alert("✅ Jeu réinitialisé !");
+        alert("✅ Jeu réinitialisé (local) !");
         location.reload();
-      } else {
-        alert("❌ Mot de passe incorrect !");
-      }
+      } else alert("❌ Mot de passe incorrect !");
+    });
+
+    document.getElementById("full-reset-btn").addEventListener("click", async () => {
+      const pass = prompt("⚠️ Entrez le mot de passe pour TOUT réinitialiser :");
+      if (pass !== "maekmo2025") return alert("❌ Mot de passe incorrect !");
+      const snapshot = await getDocs(collection(db, "joueurs"));
+      for (const d of snapshot.docs) await deleteDoc(doc(db, "joueurs", d.id));
+      localStorage.clear();
+      alert("🔥 Jeu entièrement réinitialisé !");
+      location.reload();
     });
 
     setup();
