@@ -1,130 +1,110 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🎄 MA EK MO — Jeu de grattage</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MA EK MO – Jeu de grattage</title>
 
   <style>
     body {
-      margin: 0;
-      font-family: "Poppins", sans-serif;
-      background: url("Prix2.PNG") no-repeat center center fixed;
-      background-size: cover;
-      color: black;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
+      margin:0;
+      padding:0;
+      font-family:'Poppins', sans-serif;
+      background:url('Prix2.PNG') center/cover no-repeat fixed;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      height:100vh;
     }
 
     .container {
-      background: rgba(255, 255, 255, 0.75); /* blanc translucide */
-      border-radius: 20px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-      padding: 20px;
-      max-width: 400px;
-      text-align: center;
-      position: relative;
+      background:rgba(255,255,255,0.75);
+      border-radius:20px;
+      padding:20px;
+      width:90%;
+      max-width:420px;
+      text-align:center;
+      backdrop-filter:blur(4px);
+      box-shadow:0 0 12px rgba(255,215,0,0.6);
     }
 
-    h1 {
-      font-size: 1.4em;
-      margin-bottom: 5px;
-    }
-
-    .video {
-      width: 150px;
-      height: auto;
-      position: absolute;
-      top: 15px;
-      right: -180px;
-      border-radius: 15px;
-      display: none;
-    }
-
-    #scratchCard {
-      position: relative;
-      width: 300px;
-      height: 200px;
-      margin: 20px auto;
-      background-color: transparent;
-      border-radius: 10px;
-      overflow: hidden;
+    h1, #player-number {
+      color:#000;
+      font-weight:600;
     }
 
     canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      cursor: crosshair;
-      border-radius: 10px;
+      width:300px;
+      height:160px;
+      border-radius:14px;
+      margin-top:10px;
+      cursor:pointer;
+      box-shadow:0 0 10px rgba(255,215,0,0.8);
     }
 
-    #result {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 1.3em;
-      font-weight: bold;
-      color: black;
-      z-index: 1;
-      text-align: center;
-      width: 100%;
+    .video-container {
+      margin:10px 0;
+    }
+    video {
+      width:150px;
+      border-radius:10px;
     }
 
-    #adminPanel {
-      margin-top: 15px;
+    .result {
+      color:#000;
+      position:absolute;
+      width:300px;
+      height:160px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      font-size:1.1em;
+      font-weight:700;
+      pointer-events:none;
+      top:0;
+      left:50%;
+      transform:translateX(-50%);
+      padding:10px;
     }
 
-    input[type="password"] {
-      padding: 5px;
-      border-radius: 5px;
-      border: 1px solid #aaa;
+    .admin button {
+      background:gold;
+      color:black;
+      border:none;
+      padding:8px 12px;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:bold;
+      margin-top:15px;
     }
 
-    button {
-      background-color: #e0b94f;
-      color: black;
-      border: none;
-      padding: 8px 15px;
-      margin-top: 10px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    @media (max-width: 600px) {
-      .container {
-        max-width: 90%;
-      }
-      .video {
-        width: 100px;
-        right: -120px;
-      }
+    @media(max-width:600px){
+      .container{ width:95%; }
+      video{ width:120px; }
+      canvas{ width:260px; height:140px; }
+      .result{ width:260px; height:140px; }
     }
   </style>
 </head>
 
 <body>
+
   <div class="container">
     <h1>MA EK MO — Rhums arrangés & punchs</h1>
-    <p id="playerNumber">Joueur n°...</p>
+    <p id="player-number">Chargement...</p>
 
-    <div id="scratchCard">
-      <div id="result"></div>
-      <canvas id="scratchCanvas" width="300" height="200"></canvas>
+    <div class="video-container">
+      <video id="bouchon-video" src="bouchon2.mp4" muted loop></video>
     </div>
 
-    <video id="bouchonVideo" class="video" muted loop>
-      <source src="bouchon2.mp4" type="video/mp4" />
-    </video>
+    <div style="position:relative; display:inline-block;">
+      <div id="result" class="result"></div>
+      <canvas id="scratch-card" width="300" height="160"></canvas>
+    </div>
 
-    <div id="adminPanel">
-      <input type="password" id="adminPass" placeholder="Mot de passe admin" />
-      <button onclick="resetGame()">Réinitialiser</button>
+    <div class="admin">
+      <button id="reset-btn">🔒 Réinitialiser le jeu</button>
     </div>
   </div>
 
@@ -269,3 +249,4 @@
   </script>
 </body>
 </html>
+
