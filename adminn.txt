@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin – MA EK MO</title>
+  <style>
+    body {
+      font-family:'Poppins', sans-serif;
+      background:url('Prix2.PNG') center/cover no-repeat fixed;
+      margin:0;
+      padding:0;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      min-height:100vh;
+    }
+
+    .admin-container {
+      background:rgba(255,255,255,0.8);
+      padding:20px;
+      border-radius:16px;
+      width:90%;
+      max-width:700px;
+      box-shadow:0 0 15px rgba(255,215,0,0.5);
+    }
+
+    h1 {
+      text-align:center;
+      color:#000;
+      font-weight:600;
+    }
+
+    .counter {
+      text-align:center;
+      font-size:1.2em;
+      color:#000;
+      margin-bottom:10px;
+    }
+
+    table {
+      width:100%;
+      border-collapse:collapse;
+      margin-top:10px;
+      background:white;
+      border-radius:10px;
+      overflow:hidden;
+    }
+
+    th, td {
+      padding:8px;
+      text-align:center;
+      border-bottom:1px solid #ddd;
+      font-size:0.95em;
+    }
+
+    th {
+      background-color:#f9d341;
+      color:#000;
+    }
+
+    button {
+      background:gold;
+      border:none;
+      padding:10px 15px;
+      border-radius:8px;
+      font-weight:bold;
+      cursor:pointer;
+      margin:10px auto;
+      display:block;
+    }
+
+    #passwordPrompt {
+      text-align:center;
+      color:#000;
+      background:white;
+      padding:20px;
+      border-radius:12px;
+      box-shadow:0 0 10px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body>
+  <div id="passwordPrompt">
+    <h2>🔒 Accès administrateur</h2>
+    <input type="password" id="adminPass" placeholder="Mot de passe" style="padding:8px;border-radius:6px;border:1px solid #ccc;">
+    <button onclick="checkPassword()">Connexion</button>
+  </div>
+
+  <div id="adminPage" class="admin-container" style="display:none;">
+    <h1>📊 Tableau de bord – MA EK MO</h1>
+    <div class="counter">
+      Gagnants restants : <span id="winnersLeft">...</span> / 5
+    </div>
+    <button id="resetAll">🔥 Réinitialiser complètement le jeu</button>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Joueur</th>
+          <th>Résultat</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody id="playersTable"></tbody>
+    </table>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAZcpcC_7l6wYN4SJUGa9dBbEa_ekV1n20",
+      authDomain: "ma-ek-mo-grattage.firebaseapp.com",
+      projectId: "ma-ek-mo-grattage",
+      storageBucket: "ma-ek-mo-grattage.firebasestorage.app",
+      messagingSenderId: "478221366203",
+      appId: "1:478221366203:web:ffb64fe9cbb7dc0aa20a9e",
+      measurementId: "G-BZSKRGV3PS"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Vérification du mot de passe
+    window.checkPassword = function() {
+      const pass = document.getElementById("adminPass").value;
+      if (pass === "maekmo2025") {
+        document.getElementById("passwordPrompt").style.display = "none";
+        document.getElementById("adminPage").style.display = "block";
+        loadPlayers();
+      } else {
+        alert("❌ Mot de passe incorrect !");
+      }
+    };
+
+    async function loadPlayers() {
+      const snapshot = await getDocs(collection(db, "joueurs"));
+      const table = document.getElementById("playersTable");
+      table.innerHTML = "";
+
+      let winners = 0;
+
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        const tr = document.createElement("tr");
+        const date = new Date(data.date).toLocaleString("fr-FR");
+
+        tr.innerHTML = `
+          <td>${data.numero}</td>
+          <td>${data.resultat}</td>
+          <td>${date}</td>
+        `;
+        table.appendChild(tr);
+
+        if (data.resultat.includes("Félicitations")) winners++;
+      });
+
+      document.getElementById("winnersLeft").textContent = 5 - winners;
+    }
+
+    document.getElementById("resetAll").addEventListener("click", async () => {
+      if (!confirm("⚠️ Supprimer tous les joueurs et recommencer le jeu ?")) return;
+
+      const snapshot = await getDocs(collection(db, "joueurs"));
+      for (const d of snapshot.docs) await deleteDoc(doc(db, "joueurs", d.id));
+
+      alert("✅ Jeu réinitialisé avec succès !");
+      loadPlayers();
+    });
+  </script>
+</body>
+</html>
