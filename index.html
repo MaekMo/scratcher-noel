@@ -1,97 +1,95 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>MA EK MO – Jeu de grattage</title>
+
   <style>
     body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Poppins', sans-serif;
-      background: url('Prix2.PNG') center/cover no-repeat fixed;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      color: #fff;
+      margin:0;
+      padding:0;
+      font-family:'Poppins', sans-serif;
+      background:url('Prix2.PNG') center/cover no-repeat fixed;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      height:100vh;
     }
 
     .container {
-      text-align: center;
-      background-color: rgba(0, 0, 0, 0.5);
-      border-radius: 20px;
-      padding: 20px;
-      width: 90%;
-      max-width: 420px;
-      box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+      background:rgba(255,255,255,0.75);
+      border-radius:20px;
+      padding:20px;
+      width:90%;
+      max-width:420px;
+      text-align:center;
+      backdrop-filter:blur(4px);
+      box-shadow:0 0 12px rgba(255,215,0,0.6);
     }
 
-    h1 {
-      font-size: 1.8em;
-      margin-bottom: 5px;
-    }
-
-    .video-container {
-      display: flex;
-      justify-content: center;
-      margin: 10px 0;
-    }
-
-    video {
-      width: 140px;
-      height: auto;
-      border-radius: 10px;
+    h1, #player-number {
+      color:#000;
+      font-weight:600;
     }
 
     canvas {
-      border-radius: 15px;
-      margin-top: 15px;
-      cursor: pointer;
-      box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+      width:300px;
+      height:160px;
+      border-radius:14px;
+      margin-top:10px;
+      cursor:pointer;
+      box-shadow:0 0 10px rgba(255,215,0,0.8);
+    }
+
+    .video-container {
+      margin:10px 0;
+    }
+    video {
+      width:150px;
+      border-radius:10px;
     }
 
     .result {
-      margin-top: 20px;
-      font-size: 1.1em;
-      font-weight: bold;
-      color: gold;
+      color:#000;
+      position:absolute;
+      width:300px;
+      height:160px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      font-size:1.1em;
+      font-weight:700;
+      pointer-events:none;
+      top:0;
+      left:50%;
+      transform:translateX(-50%);
+      padding:10px;
     }
 
-    .admin {
-      margin-top: 20px;
-      font-size: 0.9em;
-      color: #eee;
+    .admin button {
+      background:gold;
+      color:black;
+      border:none;
+      padding:8px 12px;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:bold;
+      margin-top:15px;
     }
 
-    button {
-      background-color: gold;
-      color: black;
-      border: none;
-      border-radius: 8px;
-      padding: 8px 14px;
-      margin-top: 10px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    @media (max-width: 600px) {
-      h1 {
-        font-size: 1.3em;
-      }
-      .container {
-        width: 95%;
-        padding: 15px;
-      }
-      video {
-        width: 100px;
-      }
+    @media(max-width:600px){
+      .container{ width:95%; }
+      video{ width:120px; }
+      canvas{ width:260px; height:140px; }
+      .result{ width:260px; height:140px; }
     }
   </style>
 </head>
 
 <body>
+
   <div class="container">
     <h1>MA EK MO — Rhums arrangés & punchs</h1>
     <p id="player-number">Chargement...</p>
@@ -100,155 +98,133 @@
       <video id="bouchon-video" src="bouchon2.mp4" muted loop></video>
     </div>
 
-    <canvas id="scratch-card" width="300" height="150"></canvas>
-    <div id="result" class="result"></div>
+    <div style="position:relative; display:inline-block;">
+      <div id="result" class="result"></div>
+      <canvas id="scratch-card" width="300" height="160"></canvas>
+    </div>
 
     <div class="admin">
       <button id="reset-btn">🔒 Réinitialiser le jeu</button>
     </div>
   </div>
 
-  <!-- Firebase -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAZcpcC_7l6wYN4SJUGa9dBbEa_ekV1n20",
-      authDomain: "ma-ek-mo-grattage.firebaseapp.com",
-      projectId: "ma-ek-mo-grattage",
-      storageBucket: "ma-ek-mo-grattage.firebasestorage.app",
-      messagingSenderId: "478221366203",
-      appId: "1:478221366203:web:ffb64fe9cbb7dc0aa20a9e",
-      measurementId: "G-BZSKRGV3PS"
-    };
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
+  import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+  const firebaseConfig = {
+    apiKey: "AIzaSyAZcpcC_7l6wYN4SJUGa9dBbEa_ekV1n20",
+    authDomain: "ma-ek-mo-grattage.firebaseapp.com",
+    projectId: "ma-ek-mo-grattage",
+    storageBucket: "ma-ek-mo-grattage.firebasestorage.app",
+    messagingSenderId: "478221366203",
+    appId: "1:478221366203:web:ffb64fe9cbb7dc0aa20a9e",
+    measurementId: "G-BZSKRGV3PS"
+  };
 
-    const canvas = document.getElementById("scratch-card");
-    const ctx = canvas.getContext("2d");
-    const resultEl = document.getElementById("result");
-    const playerNumberEl = document.getElementById("player-number");
-    const bouchonVideo = document.getElementById("bouchon-video");
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-    let isDrawing = false;
-    let hasPlayed = localStorage.getItem("hasPlayed") === "true";
-    let lastResult = localStorage.getItem("lastResult");
-    let playerNumber = localStorage.getItem("playerNumber");
+  const canvas = document.getElementById("scratch-card");
+  const ctx = canvas.getContext("2d");
+  const resultEl = document.getElementById("result");
+  const playerNumberEl = document.getElementById("player-number");
+  const video = document.getElementById("bouchon-video");
 
-    const results = [
-      "👏🏾 Bravo tu obtiens une réduction de -10% dès 30€ d'achat.",
-      "👏🏾 Bravo tu obtiens une réduction de -10% dès 30€ d'achat.",
-      "👏🏾 Bravo tu obtiens une réduction de -10% dès 30€ d'achat.",
-      "👏🏾 Bravo tu obtiens une réduction de -10% dès 30€ d'achat.",
-      "👏🏾 Bravo tu obtiens une réduction de -10% dès 30€ d'achat.",
-      "😢 Dommage tu as perdu."
-    ];
+  let isDrawing = false;
+  let played = localStorage.getItem("played")==="true";
+  let lastResult = localStorage.getItem("result");
+  let playerNumber = localStorage.getItem("playerNumber");
 
-    // 🎨 Couche dorée à gratter
-    function initScratch() {
-      ctx.fillStyle = "gold";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.globalCompositeOperation = "destination-out";
+  // ✨ Couche dorée
+  function initScratch(){
+    const gradient = ctx.createLinearGradient(0,0,300,160);
+    gradient.addColorStop(0, "#FFD700");
+    gradient.addColorStop(1, "#E6BE8A");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.globalCompositeOperation="destination-out";
+  }
+
+  // 🎯 Tirage contrôlé : 5 gagnants / 200
+  async function reveal(){
+    if(played) return;
+
+    const snapshot = await getDocs(collection(db,"joueurs"));
+    const total = snapshot.size;
+    const gagnants = snapshot.docs.filter(d => d.data().resultat === "🎉 Félicitations tu as gagné !").length;
+
+    let choice = "👏🏾 Bravo tu obtiens une réduction de -10% dès 30€ d'achat.";
+    // Si moins de 5 gagnants, chance 5/200 = 2.5%
+    if (gagnants < 5 && Math.random() < 5/200) {
+      choice = "🎉 Félicitations tu as gagné !";
     }
 
-    // 🎁 Révéler le résultat
-    async function revealResult() {
-      if (hasPlayed) return;
+    const n = total + 1;
+    playerNumber = n;
+    playerNumberEl.textContent = "Joueur n°" + n;
+    resultEl.textContent = choice;
+    video.play();
 
-      const snapshot = await getDocs(collection(db, "joueurs"));
-      const totalPlayers = snapshot.size + 1;
-      playerNumber = totalPlayers;
-      playerNumberEl.textContent = "Joueur n°" + totalPlayers;
-
-      const resultText = results[Math.floor(Math.random() * results.length)];
-      resultEl.textContent = resultText;
-      bouchonVideo.play();
-
-      await addDoc(collection(db, "joueurs"), {
-        numero: totalPlayers,
-        resultat: resultText,
-        date: new Date().toISOString()
-      });
-
-      // Envoi du mail de notification
-      sendNotification(totalPlayers, resultText, new Date().toISOString());
-
-      localStorage.setItem("hasPlayed", "true");
-      localStorage.setItem("lastResult", resultText);
-      localStorage.setItem("playerNumber", totalPlayers);
-      hasPlayed = true;
-
-      canvas.style.pointerEvents = "none";
-    }
-
-    canvas.addEventListener("mousedown", () => { isDrawing = true; });
-    canvas.addEventListener("mouseup", () => { isDrawing = false; });
-    canvas.addEventListener("mousemove", scratch);
-    canvas.addEventListener("touchstart", () => { isDrawing = true; });
-    canvas.addEventListener("touchend", () => { isDrawing = false; });
-    canvas.addEventListener("touchmove", scratch);
-
-    function scratch(e) {
-      if (!isDrawing || hasPlayed) return;
-      const rect = canvas.getBoundingClientRect();
-      const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-      const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-      ctx.beginPath();
-      ctx.arc(x, y, 20, 0, Math.PI * 2);
-      ctx.fill();
-      if (Math.random() < 0.05) revealResult();
-    }
-
-    // 📨 Envoi EmailJS
-    function sendNotification(numero, resultat, dateIso) {
-      const serviceId = 'service_cqjooc5';
-      const templateId = 'template_ct2ucqj';
-      const userId = '1P7PupUaqiHbW50OZ';
-
-      return fetch('https://api.emailjs.com/api/v1.0/email/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          service_id: serviceId,
-          template_id: templateId,
-          user_id: userId,
-          template_params: { numero: String(numero), resultat, date: dateIso }
-        })
-      })
-      .then(res => {
-        if (!res.ok) throw new Error('Erreur EmailJS: ' + res.status);
-        return res.json();
-      })
-      .catch(err => console.error('Email non envoyé :', err));
-    }
-
-    // 🔄 Réinitialiser le jeu (admin)
-    const resetBtn = document.getElementById("reset-btn");
-    resetBtn.addEventListener("click", async () => {
-      const pass = prompt("Mot de passe admin requis :");
-      if (pass !== "maekmo2025") return alert("Mot de passe incorrect ❌");
-      const docsSnap = await getDocs(collection(db, "joueurs"));
-      docsSnap.forEach(async d => await deleteDoc(doc(db, "joueurs", d.id)));
-      localStorage.clear();
-      alert("✅ Jeu réinitialisé !");
-      location.reload();
+    await addDoc(collection(db, "joueurs"), {
+      numero: n,
+      resultat: choice,
+      date: new Date().toISOString()
     });
 
-    // 🚀 Démarrage
-    window.onload = async () => {
-      if (hasPlayed) {
-        resultEl.textContent = lastResult;
-        playerNumberEl.textContent = "Joueur n°" + (playerNumber || "?");
-        bouchonVideo.play();
-        canvas.style.pointerEvents = "none";
-      } else {
-        const snapshot = await getDocs(collection(db, "joueurs"));
-        playerNumberEl.textContent = "Prochain joueur : " + (snapshot.size + 1);
-      }
-      initScratch();
-    };
-  </script>
+    save(choice, n);
+    canvas.style.pointerEvents = "none";
+  }
+
+  function save(result,n){
+    localStorage.setItem("played","true");
+    localStorage.setItem("result",result);
+    localStorage.setItem("playerNumber",n);
+    played=true;
+  }
+
+  function scratch(e){
+    if(!isDrawing || played) return;
+    const b = canvas.getBoundingClientRect();
+    let x=(e.touches?e.touches[0].clientX:e.clientX)-b.left;
+    let y=(e.touches?e.touches[0].clientY:e.clientY)-b.top;
+    ctx.beginPath();
+    ctx.arc(x,y,18,0,Math.PI*2);
+    ctx.fill();
+    if(Math.random()<0.05) reveal();
+  }
+
+  canvas.addEventListener("mousedown",() => isDrawing=true);
+  canvas.addEventListener("mouseup",() => isDrawing=false);
+  canvas.addEventListener("mousemove",scratch);
+  canvas.addEventListener("touchstart",() => isDrawing=true);
+  canvas.addEventListener("touchend",() => isDrawing=false);
+  canvas.addEventListener("touchmove",scratch);
+
+  window.onload = async () => {
+    if(played){
+      resultEl.textContent=lastResult;
+      playerNumberEl.textContent="Joueur n°"+(playerNumber||"?");
+      video.play();
+      canvas.style.pointerEvents="none";
+    } else {
+      const s=await getDocs(collection(db,"joueurs"));
+      playerNumberEl.textContent="Prochain joueur : "+(s.size+1);
+    }
+    initScratch();
+  };
+
+  document.getElementById("reset-btn").onclick = async () => {
+    const pass = prompt("Mot de passe admin :");
+    if(pass!=="maekmo2025") return alert("⛔ Mot de passe incorrect");
+    const docs = await getDocs(collection(db,"joueurs"));
+    docs.forEach(d => deleteDoc(doc(db,"joueurs",d.id)));
+    localStorage.clear();
+    alert("✅ Réinitialisation complète !");
+    location.reload();
+  };
+</script>
+
 </body>
 </html>
