@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MA EK MO – Jeu de grattage</title>
+
+  <style>
+    body {
+      margin:0;
+      padding:0;
+      font-family:'Poppins', sans-serif;
+      background:url('Prix2.PNG') center/cover no-repeat fixed;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      height:100vh;
+    }
+
+    .container {
+      background:rgba(255,255,255,0.75);
+      border-radius:20px;
+      padding:20px;
+      width:90%;
+      max-width:420px;
+      text-align:center;
+      backdrop-filter:blur(4px);
+      box-shadow:0 0 12px rgba(255,215,0,0.6);
+    }
+
+    h1, #player-number {
+      color:#000;
+      font-weight:600;
+    }
+
+    .video-container {
+      margin:15px 0;
+      display:flex;
+      justify-content:center;
+    }
+    video {
+      width:200px;
+      border-radius:10px;
+      display:none;
+    }
+
+    .scratch-container {
+      position:relative;
+      display:inline-block;
+    }
+
+    canvas {
+      width:300px;
+      height:160px;
+      border-radius:14px;
+      margin-top:10px;
+      cursor:pointer;
+      box-shadow:0 0 10px rgba(255,215,0,0.8);
+    }
+
+    .result {
+      color:#000;
+      position:absolute;
+      width:300px;
+      height:160px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      font-size:1.1em;
+      font-weight:700;
+      pointer-events:none;
+      top:0;
+      left:50%;
+      transform:translateX(-50%);
+      opacity:0;
+      transition: opacity 1s ease-in-out;
+    }
+
+    .visible { opacity:1; }
+
+    .admin button {
+      background:gold;
+      color:black;
+      border:none;
+      padding:8px 12px;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:bold;
+      margin-top:15px;
+    }
+
+    @media(max-width:600px){
+      .container{ width:95%; }
+      video{ width:160px; }
+      canvas{ width:260px; height:140px; }
+      .result{ width:260px; height:140px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>MA EK MO — Rhums arrangés & punchs</h1>
+    <p id="player-number">Chargement...</p>
+
+    <div class="video-container">
+      <video id="bouchon-video" src="bouchon2.mp4" muted loop></video>
+    </div>
+
+    <div class="scratch-container">
+      <div id="result" class="result"></div>
+      <canvas id="scratch-card" width="300" height="160"></canvas>
+    </div>
+
+    <div class="admin">
+      <button id="reset-btn">🔒 Réinitialiser le jeu</button>
+    </div>
+  </div>
+
+  <!-- EmailJS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+  <script>
+    (function() {
+      emailjs.init("1P7PupUaqiHbW50OZ");
+    })();
+  </script>
+
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAZcpcC_7l6wYN4SJUGa9dBbEa_ekV1n20",
+      authDomain: "ma-ek-mo-grattage.firebaseapp.com",
+      projectId: "ma-ek-mo-grattage",
+      storageBucket: "ma-ek-mo-grattage.appspot.com",
+      messagingSenderId: "478221366203",
+      appId: "1:478221366203:web:ffb64fe9cbb7dc0aa20a9e",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const resultDiv = document.getElementById("result");
+    const canvas = document.getElementById("scratch-card");
+    const ctx = canvas.getContext("2d");
+    const video = document.getElementById("bouchon-video");
+    const playerNumber = document.getElementById("player-number");
+
+    let playerId = localStorage.getItem("playerId");
+    let hasPlayed = localStorage.getItem("hasPlayed") === "true";
+    let revealed = false;
+
+    async function checkPlayerValidation() {
+      if (!playerId) {
+        alert("⚠️ Vous devez d’abord être enregistré et validé par l’administrateur.");
+        window.location.href = "index.html";
+        return;
+      }
+
+      const docRef = doc(db, "players", playerId);
+      const docSnap = await getDoc(docRef);
+      if (!docSnap.exists()) {
+        alert("❌ Joueur introuvable. Contactez l’administrateur.");
+        window.location.href = "index.html";
+        return;
+      }
+
+      const data = docSnap.data();
+      playerNumber.textContent = `Joueur n°${data.number}`;
+      if (data.status !== "validated") {
+        alert("⚠️ Votre paiement n’a pas encore été validé.");
+        window.location.href = "index.html";
+        return;
+      }
+
+      setupGame();
+    }
+
+    function setupGame() {
+      const savedResult = localStorage.getItem("resultat");
+      if (savedResult) {
+        showResult(savedResult);
+        return;
+      }
+
+      ctx.fillStyle = "#d4af37";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.globalCompositeOperation = "destination-out";
+
+      canvas.addEventListener("mousedown", startScratching);
+      canvas.addEventListener("touchstart", startScratching);
+    }
+
+    function startScratching(e) {
+      if (hasPlayed) return;
+      revealed = false;
+      canvas.addEventListener("mousemove", scratch);
+      canvas.addEventListener("touchmove", scratch);
+      canvas.addEventListener("mouseup", reveal);
+      canvas.addEventListener("touchend", reveal);
+    }
+
+    function scratch(e) {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+      const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+      ctx.beginPath();
+      ctx.arc(x, y, 15, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+
+    async function reveal() {
+      if (revealed || hasPlayed) return;
+      revealed = true;
+      hasPlayed = true;
+      localStorage.setItem("hasPlayed", "true");
+
+      const isWinner = Math.random() < 5 / 200;
+      const choice = isWinner
+        ? "🎉 Félicitations tu as gagné !"
+        : "👏🏾 Bravo tu obtiens une réduction de -10% dès 30€ d'achat.";
+
+      showResult(choice);
+      video.style.display = "block";
+      video.play();
+
+      localStorage.setItem("resultat", choice);
+      await addDoc(collection(db, "results"), {
+        playerId,
+        result: choice,
+        date: new Date().toISOString()
+      });
+
+      emailjs.send("service_cqjooc5", "template_ct2ucqj", {
+        to_name: "Admin MA EK MO",
+        message: `Le joueur ${playerNumber.textContent} a joué.\nRésultat : ${choice}`,
+        reply_to: "contact@maekmo.com",
+      });
+    }
+
+    function showResult(text) {
+      resultDiv.textContent = text;
+      resultDiv.classList.add("visible");
+    }
+
+    document.getElementById("reset-btn").addEventListener("click", () => {
+      const pass = prompt("Entrez le mot de passe admin pour réinitialiser :");
+      if (pass === "maekmo2025") {
+        localStorage.clear();
+        alert("✅ Jeu réinitialisé !");
+        window.location.reload();
+      } else {
+        alert("❌ Mot de passe incorrect");
+      }
+    });
+
+    checkPlayerValidation();
+  </script>
+</body>
+</html>
