@@ -1,212 +1,202 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin – MA EK MO</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MA EK MO — Administration</title>
+
   <style>
     body {
-      font-family: 'Poppins', sans-serif;
-      background: url('Prix2.PNG') center/cover no-repeat fixed;
-      margin: 0;
-      padding: 0;
-      color: #222;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      backdrop-filter: blur(4px);
+      margin:0;
+      padding:0;
+      font-family:'Poppins', sans-serif;
+      background:url('Prix2.PNG') center/cover no-repeat fixed;
+      display:flex;
+      justify-content:center;
+      align-items:flex-start;
+      min-height:100vh;
+      color:#000;
+    }
+
+    .container {
+      background:rgba(255,255,255,0.8);
+      border-radius:20px;
+      padding:25px;
+      width:90%;
+      max-width:800px;
+      margin-top:40px;
+      backdrop-filter:blur(4px);
+      box-shadow:0 0 15px rgba(255,215,0,0.5);
     }
 
     h1 {
-      margin-top: 30px;
-      color: #000;
-      background: rgba(255, 255, 255, 0.8);
-      padding: 10px 20px;
-      border-radius: 12px;
-    }
-
-    .table-container {
-      background: rgba(255, 255, 255, 0.85);
-      border-radius: 15px;
-      padding: 20px;
-      width: 95%;
-      max-width: 700px;
-      box-shadow: 0 0 12px rgba(255,215,0,0.6);
-      margin-top: 20px;
+      text-align:center;
+      color:#000;
+      margin-bottom:20px;
     }
 
     table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
+      width:100%;
+      border-collapse:collapse;
+      margin-top:20px;
+      background:white;
+      border-radius:12px;
+      overflow:hidden;
     }
 
     th, td {
-      padding: 10px;
-      border-bottom: 1px solid #ddd;
-      text-align: center;
+      padding:10px;
+      text-align:center;
+      border-bottom:1px solid #eee;
     }
 
     th {
-      background: rgba(255,215,0,0.3);
+      background:gold;
+      color:black;
+    }
+
+    tr:nth-child(even) {
+      background:#f9f9f9;
     }
 
     button {
-      border: none;
-      border-radius: 8px;
-      padding: 8px 12px;
-      cursor: pointer;
-      font-weight: bold;
+      background:gold;
+      color:black;
+      border:none;
+      padding:6px 10px;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:bold;
     }
 
-    .validate-btn {
-      background: #28a745;
-      color: white;
+    #counter {
+      text-align:center;
+      font-size:1.2em;
+      font-weight:600;
+      color:#333;
+      margin-top:10px;
     }
 
-    .delete-btn {
-      background: #dc3545;
-      color: white;
+    .actions {
+      text-align:center;
+      margin-top:20px;
     }
 
-    .reset-btn {
-      background: gold;
-      color: black;
-      margin-top: 20px;
+    .actions button {
+      margin:0 10px;
     }
 
-    #password-box {
-      background: rgba(255,255,255,0.9);
-      border-radius: 10px;
-      padding: 20px;
-      text-align: center;
-      box-shadow: 0 0 10px rgba(255,215,0,0.5);
-    }
-
-    input[type="password"] {
-      padding: 8px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      margin-right: 10px;
-    }
-
-    @media (max-width: 600px) {
-      th, td { font-size: 0.9em; padding: 6px; }
-      button { padding: 6px 8px; font-size: 0.8em; }
+    @media(max-width:600px){
+      table{ font-size:0.9em; }
     }
   </style>
 </head>
+
 <body>
-  <h1>🔐 Administration du Jeu – MA EK MO</h1>
+  <div class="container">
+    <h1>MA EK MO — Administration</h1>
+    <p id="counter">Chargement du compteur...</p>
 
-  <div id="password-box">
-    <p>Entrez le mot de passe administrateur :</p>
-    <input type="password" id="admin-pass" placeholder="Mot de passe">
-    <button id="login-btn">Connexion</button>
-  </div>
-
-  <div id="admin-panel" class="hidden table-container" style="display:none;">
-    <h2>Liste des joueurs</h2>
-    <table>
+    <table id="players-table">
       <thead>
         <tr>
-          <th>Nom</th>
-          <th>Statut</th>
-          <th>Actions</th>
+          <th>Joueur n°</th>
+          <th>Résultat</th>
+          <th>Date</th>
+          <th>Statut paiement</th>
+          <th>Action</th>
         </tr>
       </thead>
-      <tbody id="players-table"></tbody>
+      <tbody></tbody>
     </table>
 
-    <button class="reset-btn" id="reset-btn">♻️ Réinitialiser la base</button>
+    <div class="actions">
+      <button id="reset-btn">🔄 Réinitialiser complètement</button>
+    </div>
   </div>
 
+  <!-- 🔥 Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { 
+      getFirestore, collection, getDocs, updateDoc, doc, deleteDoc 
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAZcpcC_7l6wYN4SJUGa9dBbEa_ekV1n20",
       authDomain: "ma-ek-mo-grattage.firebaseapp.com",
       projectId: "ma-ek-mo-grattage",
-      storageBucket: "ma-ek-mo-grattage.appspot.com",
+      storageBucket: "ma-ek-mo-grattage.firebasestorage.app",
       messagingSenderId: "478221366203",
       appId: "1:478221366203:web:ffb64fe9cbb7dc0aa20a9e",
+      measurementId: "G-BZSKRGV3PS"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const adminPanel = document.getElementById("admin-panel");
-    const tableBody = document.getElementById("players-table");
-    const loginBtn = document.getElementById("login-btn");
+    const tableBody = document.querySelector("#players-table tbody");
+    const counterEl = document.getElementById("counter");
     const resetBtn = document.getElementById("reset-btn");
-    const passwordBox = document.getElementById("password-box");
-    const adminPassInput = document.getElementById("admin-pass");
-
-    const ADMIN_PASSWORD = "maekmo2025";
-
-    loginBtn.addEventListener("click", () => {
-      if (adminPassInput.value === ADMIN_PASSWORD) {
-        passwordBox.style.display = "none";
-        adminPanel.style.display = "block";
-        loadPlayers();
-      } else {
-        alert("❌ Mot de passe incorrect");
-      }
-    });
 
     async function loadPlayers() {
+      const snapshot = await getDocs(collection(db, "joueurs"));
       tableBody.innerHTML = "";
-      const snapshot = await getDocs(collection(db, "players"));
-      snapshot.forEach(docSnap => {
-        const player = docSnap.data();
-        const row = document.createElement("tr");
+      let winners = 0;
 
-        row.innerHTML = `
-          <td>${player.name}</td>
-          <td>${player.status}</td>
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        const tr = document.createElement("tr");
+
+        if (data.resultat.includes("gagné")) winners++;
+
+        tr.innerHTML = `
+          <td>${data.numero || "-"}</td>
+          <td>${data.resultat || "-"}</td>
+          <td>${new Date(data.date).toLocaleString("fr-FR")}</td>
+          <td>${data.paye ? "✅ Validé" : "❌ En attente"}</td>
           <td>
-            ${player.status === "pending"
-              ? `<button class="validate-btn" data-id="${docSnap.id}">Valider</button>`
-              : ""}
-            <button class="delete-btn" data-id="${docSnap.id}">Supprimer</button>
+            <button onclick="validatePayment('${docSnap.id}')">Valider</button>
           </td>
         `;
-
-        tableBody.appendChild(row);
+        tableBody.appendChild(tr);
       });
 
-      document.querySelectorAll(".validate-btn").forEach(btn => {
-        btn.addEventListener("click", async (e) => {
-          const id = e.target.dataset.id;
-          await updateDoc(doc(db, "players", id), { status: "validated" });
-          alert("✅ Joueur validé !");
-          loadPlayers();
-        });
-      });
-
-      document.querySelectorAll(".delete-btn").forEach(btn => {
-        btn.addEventListener("click", async (e) => {
-          const id = e.target.dataset.id;
-          await deleteDoc(doc(db, "players", id));
-          alert("🗑️ Joueur supprimé");
-          loadPlayers();
-        });
-      });
+      const winnersLeft = 5 - winners;
+      counterEl.textContent = `🎉 Gagnants restants : ${winnersLeft >= 0 ? winnersLeft : 0}`;
     }
 
-    resetBtn.addEventListener("click", async () => {
-      if (confirm("⚠️ Supprimer tous les joueurs ?")) {
-        const snapshot = await getDocs(collection(db, "players"));
-        for (const docSnap of snapshot.docs) {
-          await deleteDoc(doc(db, "players", docSnap.id));
-        }
-        alert("✅ Base réinitialisée !");
-        loadPlayers();
+    window.validatePayment = async (id) => {
+      const pass = prompt("Mot de passe administrateur :");
+      if (pass !== "maekmo2025") {
+        alert("❌ Mot de passe incorrect !");
+        return;
       }
+      const docRef = doc(db, "joueurs", id);
+      await updateDoc(docRef, { paye: true });
+      alert("✅ Paiement validé !");
+      loadPlayers();
+    };
+
+    resetBtn.addEventListener("click", async () => {
+      const pass = prompt("Entrez le mot de passe admin pour réinitialiser :");
+      if (pass !== "maekmo2025") {
+        alert("❌ Mot de passe incorrect !");
+        return;
+      }
+
+      if (!confirm("⚠️ Confirmer la suppression de tous les joueurs ?")) return;
+
+      const snapshot = await getDocs(collection(db, "joueurs"));
+      for (const docSnap of snapshot.docs) {
+        await deleteDoc(doc(db, "joueurs", docSnap.id));
+      }
+
+      alert("✅ Jeu réinitialisé !");
+      loadPlayers();
     });
+
+    loadPlayers();
   </script>
 </body>
 </html>
