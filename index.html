@@ -15,11 +15,10 @@
       justify-content:center;
       align-items:center;
       height:100vh;
-      color:#000;
     }
 
     .container {
-      background:rgba(255,255,255,0.8);
+      background:rgba(255,255,255,0.75);
       border-radius:20px;
       padding:20px;
       width:90%;
@@ -29,35 +28,9 @@
       box-shadow:0 0 12px rgba(255,215,0,0.6);
     }
 
-    h1 {
+    h1, #player-number {
       color:#000;
       font-weight:600;
-    }
-
-    button {
-      background:gold;
-      color:black;
-      border:none;
-      padding:10px 16px;
-      border-radius:10px;
-      font-weight:bold;
-      margin:10px 0;
-      cursor:pointer;
-      transition:0.2s;
-    }
-
-    button:hover {
-      transform:scale(1.05);
-    }
-
-    .hidden {
-      display:none;
-    }
-
-    .video-container video {
-      width:180px;
-      border-radius:12px;
-      margin-top:10px;
     }
 
     canvas {
@@ -67,6 +40,14 @@
       margin-top:10px;
       cursor:pointer;
       box-shadow:0 0 10px rgba(255,215,0,0.8);
+    }
+
+    .video-container {
+      margin:10px 0;
+    }
+    video {
+      width:180px;
+      border-radius:10px;
     }
 
     .result {
@@ -86,7 +67,36 @@
       transform:translateX(-50%);
       padding:10px;
       opacity:0;
-      transition:opacity 1s ease;
+      transition:opacity 1.2s ease-in-out;
+    }
+
+    .result.visible {
+      opacity:1;
+    }
+
+    .admin button {
+      background:gold;
+      color:black;
+      border:none;
+      padding:8px 12px;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:bold;
+      margin-top:15px;
+    }
+
+    /* ---- PAGE D’ACCUEIL ---- */
+    #payment-section {
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+    }
+
+    #qr-container img {
+      border-radius:10px;
+      box-shadow:0 0 8px rgba(0,0,0,0.2);
     }
 
     @media(max-width:600px){
@@ -100,22 +110,29 @@
 
 <body>
 
-  <div class="container" id="start-screen">
+  <div class="container" id="payment-container">
     <h1>MA EK MO — Rhums arrangés & punchs</h1>
-    <p>Jeu 100% gagnant ! 🎁<br>Essayez, vous gagnerez forcément !</p>
-    <br>Participez pour 2 € seulement !</p>
-    
-    <button id="pay-wero-btn">💳 Payer par Wero</button>
-    <button id="already-paid-btn">✅ J’ai déjà payé</button>
+    <h2>Paiement du jeu (2€)</h2>
 
-    <div id="qr-container" class="hidden">
-      <p>Scanne ce QR code avec ton app Wero pour payer :</p>
-      <img src="qrcode-wero.png" alt="QR Code Wero" width="200" height="200">
-      <p><em>Une fois le paiement effectué, clique sur “J’ai déjà payé”.</em></p>
+    <div id="payment-section">
+      <button id="wero-btn"
+        style="background-color:#28a745;color:white;padding:10px 20px;border:none;border-radius:10px;cursor:pointer;font-size:1em;font-weight:bold;">
+        💸 Payer par Wero (2€)
+      </button>
+
+      <div id="qr-container" class="hidden" style="display:none; margin-top:20px;">
+        <p>📱 Scanne ce QR code avec ton application bancaire Wero :</p>
+        <img src="qrcode-wero.png" alt="QR Wero" width="180"/>
+      </div>
+
+      <button id="already-paid-btn"
+        style="margin-top:20px;background-color:#f0ad4e;color:white;padding:10px 20px;border:none;border-radius:10px;cursor:pointer;font-size:1em;font-weight:bold;">
+        ✅ J’ai déjà payé
+      </button>
     </div>
   </div>
 
-  <div class="container hidden" id="game-screen">
+  <div class="container" id="game-container" style="display:none;">
     <h1>MA EK MO — Rhums arrangés & punchs</h1>
     <p id="player-number">Chargement...</p>
 
@@ -128,7 +145,9 @@
       <canvas id="scratch-card" width="300" height="160"></canvas>
     </div>
 
-    <button id="reset-btn">🔒 Réinitialiser</button>
+    <div class="admin">
+      <button id="reset-btn">🔒 Réinitialiser le jeu</button>
+    </div>
   </div>
 
   <!-- 📧 EmailJS SDK -->
@@ -139,10 +158,10 @@
     })();
   </script>
 
-  <!-- 🔥 Firebase -->
+  <!-- 🔥 Firebase + Jeu -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAZcpcC_7l6wYN4SJUGa9dBbEa_ekV1n20",
@@ -157,58 +176,54 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Sélection des éléments
-    const startScreen = document.getElementById("start-screen");
-    const gameScreen = document.getElementById("game-screen");
-    const payBtn = document.getElementById("pay-wero-btn");
+    const paymentContainer = document.getElementById("payment-container");
+    const gameContainer = document.getElementById("game-container");
+    const weroBtn = document.getElementById("wero-btn");
     const alreadyPaidBtn = document.getElementById("already-paid-btn");
     const qrContainer = document.getElementById("qr-container");
-    const playerNumber = document.getElementById("player-number");
-    const resultDiv = document.getElementById("result");
     const canvas = document.getElementById("scratch-card");
     const ctx = canvas.getContext("2d");
+    const resultDiv = document.getElementById("result");
     const video = document.getElementById("bouchon-video");
-    const resetBtn = document.getElementById("reset-btn");
+    const playerNumber = document.getElementById("player-number");
 
-    let hasPaid = localStorage.getItem("hasPaid") === "true";
+    let playerIndex = localStorage.getItem("playerIndex");
     let hasPlayed = localStorage.getItem("hasPlayed") === "true";
     let revealed = false;
 
-    // -------------------------------
-    // 🎟️ PAGE D'ACCUEIL — PAIEMENT
-    // -------------------------------
-    payBtn.addEventListener("click", () => {
-      qrContainer.classList.toggle("hidden");
-    });
+    // Lien deeplink Wero
+    const weroLink = "wero://pay?iban=FR3420041010180247172N01586&amount=2.00&name=MA%20EK%20MO&message=Jeu%20de%20grattage";
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-    alreadyPaidBtn.addEventListener("click", () => {
-      const pass = prompt("Entrez le mot de passe admin pour confirmation du paiement :");
-      if (pass === "maekmo2025") {
-        localStorage.setItem("hasPaid", "true");
-        alert("✅ Paiement confirmé. Le jeu est débloqué !");
-        startScreen.classList.add("hidden");
-        gameScreen.classList.remove("hidden");
-        setup();
+    weroBtn.addEventListener("click", () => {
+      if (isMobile) {
+        window.location.href = weroLink;
+        setTimeout(() => alert("Si ton application bancaire ne s’est pas ouverte, vérifie que Wero est installée."), 2000);
       } else {
-        alert("❌ Mot de passe incorrect !");
+        qrContainer.style.display = "block";
       }
     });
 
-    // -------------------------------
-    // 🧩 LOGIQUE DU JEU DE GRATTAGE
-    // -------------------------------
+    alreadyPaidBtn.addEventListener("click", () => {
+      const code = prompt("Entrez le code reçu après paiement ou laissez vide si confirmé par l’admin :");
+      if (code !== null) {
+        localStorage.setItem("accessGranted", "true");
+        paymentContainer.style.display = "none";
+        gameContainer.style.display = "block";
+        setup();
+      }
+    });
+
     async function getNextPlayerNumber() {
       const snapshot = await getDocs(collection(db, "joueurs"));
       return snapshot.size + 1;
     }
 
     async function setup() {
-      let playerIndex = localStorage.getItem("playerIndex");
       if (!playerIndex) {
         playerIndex = await getNextPlayerNumber();
         localStorage.setItem("playerIndex", playerIndex);
       }
-
       playerNumber.textContent = "Joueur n°" + playerIndex;
 
       const result = localStorage.getItem("resultat");
@@ -217,7 +232,6 @@
         return;
       }
 
-      // Zone dorée
       ctx.fillStyle = "#d4af37";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.globalCompositeOperation = "destination-out";
@@ -227,7 +241,7 @@
     }
 
     function startScratching(e) {
-      if (hasPlayed || !hasPaid) return;
+      if (hasPlayed) return;
       revealed = false;
       canvas.addEventListener("mousemove", scratch);
       canvas.addEventListener("touchmove", scratch);
@@ -257,21 +271,21 @@
         : "👏🏾 Bravo tu obtiens une réduction de -10% dès 30€ d'achat.";
 
       resultDiv.textContent = choice;
-      resultDiv.style.opacity = 1;
-      localStorage.setItem("resultat", choice);
+      resultDiv.classList.add("visible");
 
+      localStorage.setItem("resultat", choice);
       video.style.display = "block";
       video.play();
 
       await addDoc(collection(db, "joueurs"), {
-        numero: localStorage.getItem("playerIndex"),
+        numero: playerIndex,
         resultat: choice,
         date: new Date().toISOString(),
       });
 
       emailjs.send("service_cqjooc5", "template_ct2ucqj", {
         to_name: "Admin MA EK MO",
-        message: `Le joueur n°${localStorage.getItem("playerIndex")} a joué.\nRésultat : ${choice}`,
+        message: `Le joueur n°${playerIndex} a joué.\nRésultat : ${choice}`,
         reply_to: "contact@maekmo.com",
       });
 
@@ -279,8 +293,8 @@
       canvas.removeEventListener("touchmove", scratch);
     }
 
-    resetBtn.addEventListener("click", () => {
-      const pass = prompt("Mot de passe administrateur :");
+    document.getElementById("reset-btn").addEventListener("click", () => {
+      const pass = prompt("Mot de passe admin :");
       if (pass === "maekmo2025") {
         localStorage.clear();
         alert("✅ Jeu réinitialisé !");
@@ -289,11 +303,13 @@
         alert("❌ Mot de passe incorrect !");
       }
     });
+
+    // Si l’accès a été autorisé, afficher le jeu
+    if (localStorage.getItem("accessGranted") === "true") {
+      paymentContainer.style.display = "none";
+      gameContainer.style.display = "block";
+      setup();
+    }
   </script>
 </body>
 </html>
-
-
-
-
-
