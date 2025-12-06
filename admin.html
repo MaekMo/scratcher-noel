@@ -1,180 +1,57 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>MA EK MO — Administration</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>MA EK MO — Admin (complet)</title>
   <style>
-    :root{
-      --gold: #d4af37;
-      --bg: rgba(255,255,255,0.88);
-      --muted: #666;
-    }
-    body{
-      margin:0;
-      font-family: "Poppins", system-ui, Arial, sans-serif;
-      background: url('Prix2.PNG') center/cover no-repeat fixed;
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-      color:#111;
-      min-height:100vh;
-      display:flex;
-      align-items:flex-start;
-      justify-content:center;
-      padding:28px;
-    }
-    .card{
-      width:100%;
-      max-width:1100px;
-      background:var(--bg);
-      border-radius:16px;
-      padding:20px;
-      box-shadow:0 8px 30px rgba(0,0,0,0.12);
-      backdrop-filter: blur(4px);
-    }
-    h1{ margin:0 0 6px 0; font-size:22px; }
-    p.lead{ margin:0 0 18px 0; color:var(--muted); }
-
-    .topbar{
-      display:flex;
-      gap:12px;
-      flex-wrap:wrap;
-      align-items:center;
-      margin-bottom:16px;
-    }
-    input[type="password"]{
-      padding:8px 10px;
-      border-radius:8px;
-      border:1px solid #ddd;
-      font-size:14px;
-      margin-right:8px;
-    }
-    button {
-      cursor:pointer;
-      border:0;
-      padding:9px 12px;
-      border-radius:8px;
-      font-weight:600;
-    }
-    .btn-gold{ background:var(--gold); color:#000; }
-    .btn-danger{ background:#d9534f; color:#fff; }
-    .btn-green{ background:#28a745; color:#fff; }
-    .btn-muted{ background:#f0f0f0; color:#333; }
-
-    .stats {
-      display:flex;
-      gap:12px;
-      margin-bottom:16px;
-      flex-wrap:wrap;
-    }
-    .stat {
-      background:white;
-      border-radius:10px;
-      padding:12px;
-      min-width:160px;
-      box-shadow:0 2px 8px rgba(0,0,0,0.06);
-    }
-    .stat strong{ display:block; font-size:18px; }
-    .stat small{ color:var(--muted); }
-
-    table{
-      width:100%;
-      border-collapse:collapse;
-      margin-top:12px;
-      font-size:14px;
-    }
-    th, td{
-      padding:10px 8px;
-      border-bottom:1px solid rgba(0,0,0,0.06);
-      text-align:left;
-    }
-    th{ background:linear-gradient(180deg, rgba(212,175,55,0.15), transparent); color:#111; font-weight:700; }
-    td.actions{ min-width:220px; text-align:right; }
-
-    .pill { display:inline-block; padding:6px 8px; border-radius:999px; background:#f0f0f0; color:#333; font-weight:600; margin-right:6px; }
-    .winner { color: #0b6623; font-weight:700; }
-    .lost { color:#333; }
-
-    @media(max-width:900px){
-      td.actions{ text-align:left; }
-      .stats{ flex-direction:column; }
-    }
+    body{ margin:0; font-family:'Poppins',sans-serif; background:url('Prix2.PNG') center/cover no-repeat fixed; padding:24px; }
+    .card{ max-width:1100px; margin:0 auto; background:rgba(255,255,255,0.9); padding:18px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.1); }
+    h1{ margin:0 0 6px 0; }
+    .controls{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
+    input[type=password]{ padding:8px;border-radius:8px;border:1px solid #ddd; }
+    button{ padding:8px 12px;border-radius:8px;border:0; font-weight:700; cursor:pointer; }
+    .btn-gold{ background:#d4af37; color:#000; }
+    .btn-danger{ background:#d9534f;color:#fff; }
+    .btn-muted{ background:#f0f0f0;color:#000; }
+    table{ width:100%; border-collapse:collapse; margin-top:12px; font-size:14px; }
+    th, td{ padding:10px; border-bottom:1px solid #eee; text-align:left; }
+    th{ background:linear-gradient(180deg, rgba(212,175,55,0.14), transparent); }
+    .actions{ text-align:right; }
   </style>
 </head>
 <body>
-  <div class="card" id="adminCard">
-    <h1>MA EK MO — Panneau d'administration</h1>
-    <p class="lead">Gérer les joueurs, valider les paiements, suivre les gagnants et réinitialiser la base.</p>
-
-    <!-- Authentication -->
-    <div class="topbar" id="loginBar">
-      <input id="adminPassInput" type="password" placeholder="Mot de passe admin">
-      <button id="loginBtn" class="btn-gold">🔐 Se connecter</button>
-      <div style="margin-left:auto;">
-        <button id="refreshBtn" class="btn-muted">🔄 Rafraîchir</button>
-        <button id="exportBtn" class="btn-muted">📥 Export CSV</button>
-        <button id="cleanupBtn" class="btn-danger">🧨 Réinitialisation Firestore</button>
-      </div>
+  <div class="card">
+    <h1>MA EK MO — Panneau Admin</h1>
+    <div class="controls">
+      <input id="adminPwd" type="password" placeholder="Mot de passe admin">
+      <button id="loginBtn" class="btn-gold">Se connecter</button>
+      <button id="refreshBtn" class="btn-muted">🔄 Rafraîchir</button>
+      <button id="exportBtn" class="btn-muted">📥 Export CSV</button>
+      <button id="cleanupBtn" class="btn-danger">🧨 Reset Firestore</button>
     </div>
 
     <div id="panel" style="display:none;">
-      <!-- Stats -->
-      <div class="stats" aria-hidden="false">
-        <div class="stat">
-          <small>Total joueurs</small>
-          <strong id="totalPlayers">0</strong>
-        </div>
-        <div class="stat">
-          <small>Gagnants (détectés)</small>
-          <strong id="winnersCount">0</strong>
-        </div>
-        <div class="stat">
-          <small>Gagnants restants</small>
-          <strong id="winnersLeft">20</strong>
-        </div>
-        <div class="stat">
-          <small>Prochain gagnant</small>
-          <strong id="nextWinner">10</strong>
-        </div>
+      <div style="margin-bottom:12px;">
+        <strong>Total joueurs :</strong> <span id="totalPlayers">0</span>
+        &nbsp; • &nbsp; <strong>Gagnants :</strong> <span id="winnersCount">0</span>
+        &nbsp; • &nbsp; <strong>Gagnants restants :</strong> <span id="winnersLeft">20</span>
+        &nbsp; • &nbsp; <strong>Prochain gagnant :</strong> <span id="nextWinner">10</span>
       </div>
 
-      <!-- Players table -->
-      <div style="overflow:auto; max-height:56vh;">
-        <table id="playersTable" role="table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Nom / ID</th>
-              <th>Résultat</th>
-              <th>Date</th>
-              <th>Payé</th>
-              <th>Statut</th>
-              <th class="actions">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="playersTbody">
-            <!-- rows injected -->
-          </tbody>
-        </table>
-      </div>
-
-      <p style="margin-top:12px; color:var(--muted); font-size:13px;">
-        Notes :
-        <span class="pill">validate password = <strong>validate2025</strong></span>
-        <span class="pill">reset password = <strong>reset2025</strong></span>
-        <span class="pill">200 joueurs max — 1 gagnant tous les 10 joueurs</span>
-      </p>
+      <table>
+        <thead>
+          <tr><th>#</th><th>Nom/ID</th><th>Résultat</th><th>Date</th><th>Payé</th><th>Statut</th><th class="actions">Actions</th></tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
     </div>
   </div>
 
-  <!-- Firebase & Logic -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import {
-      getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, setDoc, query, orderBy
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    // ---------- CONFIG ----------
     const firebaseConfig = {
       apiKey: "AIzaSyAZcpcC_7l6wYN4SJUGa9dBbEa_ekV1n20",
       authDomain: "ma-ek-mo-grattage.firebaseapp.com",
@@ -184,333 +61,163 @@
       appId: "1:478221366203:web:ffb64fe9cbb7dc0aa20a9e",
       measurementId: "G-BZSKRGV3PS"
     };
-
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // ---------- ADMIN PASSWORDS ----------
-    const ADMIN_LOGIN_PWD = "maekmo2025";   // to access the panel
-    const VALIDATE_PWD = "validate2025";   // used to validate payments per-player
-    const RESET_PWD = "reset2025";         // used to wipe Firestore
+    const ADMIN_LOGIN = "maekmo2025";
+    const VALIDATE_PWD = "validate2025";
+    const RESET_PWD = "reset2025";
 
-    // ---------- WINNERS MAPPING (kept for display) ----------
-    const winnersMap = {
-      10: "🎉 Félicitations tu as gagné 1 magnet rum'aide !",
-      20: "🎉 Félicitations tu as gagné 1 verre arum'attisée!",
-      30: "🎉 Félicitations tu as gagné 1 fiole thym!",
-      40: "🎉 Félicitations tu as gagné 1 magnet arum'attisée!",
-      50: "🎉 Félicitations tu as gagné 1 verre rum'aide!",
-      60: "🎉 Félicitations tu as gagné 1 fiole citron!",
-      70: "🎉 Félicitations tu as gagné 1 magnet rum'antan !",
-      80: "🎉 Félicitations tu as gagné 1 verre rum'antique !",
-      90: "🎉 Félicitations tu as gagné 1 fiole moringa !",
-      100: "🎉 Félicitations tu as gagné 1 coffret arum'attisée !",
-      110: "🎉 Félicitations tu as gagné 1 magnet rum'antique !",
-      120: "🎉 Félicitations tu as gagné 1 fiole gingembre !",
-      130: "🎉 Félicitations tu as gagné 1 verre rum'antan!",
-      140: "🎉 Félicitations tu as gagné 1 verre + paille arum'attisée!",
-      150: "🎉 Félicitations tu as gagné 1 coffret rum'aide !",
-      160: "🎉 Félicitations tu as gagné 1 fiole citronnelle !",
-      170: "🎉 Félicitations tu as gagné 1 verre + paille rum'antique!",
-      180: "🎉 Félicitations tu as gagné 1 fiole cannelle !",
-      190: "🎉 Félicitations tu as gagné 1 verre + paille rum'antan!",
-      200: "🎉 Félicitations tu as gagné 1 coffret rum'antique!"
-    };
-
-    // ---------- DOM ----------
     const loginBtn = document.getElementById("loginBtn");
-    const adminPassInput = document.getElementById("adminPassInput");
+    const adminPwd = document.getElementById("adminPwd");
     const panel = document.getElementById("panel");
-    const playersTbody = document.getElementById("playersTbody");
-    const totalPlayersEl = document.getElementById("totalPlayers");
-    const winnersCountEl = document.getElementById("winnersCount");
-    const winnersLeftEl = document.getElementById("winnersLeft");
-    const nextWinnerEl = document.getElementById("nextWinner");
+    const tbody = document.getElementById("tbody");
+    const totalPlayers = document.getElementById("totalPlayers");
+    const winnersCount = document.getElementById("winnersCount");
+    const winnersLeft = document.getElementById("winnersLeft");
+    const nextWinner = document.getElementById("nextWinner");
     const refreshBtn = document.getElementById("refreshBtn");
     const exportBtn = document.getElementById("exportBtn");
     const cleanupBtn = document.getElementById("cleanupBtn");
 
-    let adminLogged = false;
-    let mergedPlayers = []; // combined from 'joueurs' and 'players'
+    let logged = false;
+    let currentList = [];
 
-    // ---------- Utilitaires ----------
-    function formatDate(ts) {
+    function isWinnerText(text){ return text && /félicitations|félicitation/i.test(text); }
+    function computeNext(total){ if(total>=200) return "—"; return Math.min(200, Math.ceil((total+1)/10)*10); }
+
+    async function loadPlayers() {
+      tbody.innerHTML = "<tr><td colspan='7'>Chargement…</td></tr>";
       try {
-        const d = new Date(ts);
-        if (isNaN(d)) return ts || "-";
-        return d.toLocaleString("fr-FR");
-      } catch (e) { return ts || "-"; }
-    }
-
-    function isWinnerResultText(text){
-      if (!text) return false;
-      return text.toLowerCase().includes("félicitations") || text.toLowerCase().includes("félicitation");
-    }
-
-    // compute next multiple of 10 greater than current count (max 200)
-    function computeNextWinner(total) {
-      if (total >= 200) return "—";
-      const next = Math.ceil((total+1) / 10) * 10;
-      return next <= 200 ? next : "—";
-    }
-
-    // ---------- Load players from multiple collections ----------
-    async function loadAllPlayers() {
-      // fetch both collections if exist, merge, and normalize fields
-      mergedPlayers = [];
-
-      // Helper to read a collection and normalize doc
-      async function readCollection(collectionName) {
-        try {
-          const colRef = collection(db, collectionName);
-          const snaps = await getDocs(colRef);
-          return snaps.docs.map(d => ({ id: d.id, ...d.data(), _from: collectionName }));
-        } catch (err) {
-          console.warn("Collection read error", collectionName, err);
-          return [];
+        const snaps = await getDocs(collection(db,"joueurs"));
+        const rows = snaps.docs.map(d => ({ id:d.id, ...d.data() }));
+        // fallback to 'players' if empty
+        if (!rows.length) {
+          const snaps2 = await getDocs(collection(db,"players"));
+          rows.push(...snaps2.docs.map(d => ({ id:d.id, ...d.data() })));
         }
+        // normalize & sort by numero or date
+        rows.sort((a,b) => {
+          const na = Number(a.numero) || 0;
+          const nb = Number(b.numero) || 0;
+          if (na && nb) return na - nb;
+          const da = a.date ? new Date(a.date).getTime() : 0;
+          const dbv = b.date ? new Date(b.date).getTime() : 0;
+          return da - dbv;
+        });
+        currentList = rows;
+        renderTable(rows);
+      } catch (err) {
+        console.error(err);
+        tbody.innerHTML = "<tr><td colspan='7' class='error'>Erreur en lecture Firestore. Vérifiez vos règles et la console.</td></tr>";
       }
-
-      const colA = await readCollection("joueurs");
-      const colB = await readCollection("players"); // older/alternate naming
-      const colC = await readCollection("payments"); // optional
-      // merge: prefer field names from doc, but ensure numero exists
-      mergedPlayers = [...colA, ...colB, ...colC].map((p, idx) => {
-        return {
-          docId: p.id,
-          numero: p.numero ?? p.number ?? p.no ?? (p.numero === 0 ? 0 : p.numero) ?? p._auto_num ?? null,
-          name: p.name ?? p.nom ?? p.pseudo ?? null,
-          resultat: p.resultat ?? p.result ?? p.outcome ?? null,
-          date: p.date ?? p.createdAt ?? p.timestamp ?? p.time ?? null,
-          paye: p.paye ?? p.paid ?? p.paye === true || false,
-          status: p.status ?? (p.paye ? "validated" : (p.status ?? "pending")),
-          _from: p._from ?? p._from
-        };
-      });
-
-      // If numero missing, try to index by order of insertion
-      mergedPlayers = mergedPlayers.sort((a,b) => {
-        // by numeric numero if present else by date if present else keep
-        const na = Number(a.numero);
-        const nb = Number(b.numero);
-        if (!isNaN(na) && !isNaN(nb)) return na - nb;
-        const da = a.date ? new Date(a.date).getTime() : 0;
-        const db = b.date ? new Date(b.date).getTime() : 0;
-        return da - db;
-      }).map((p,i) => ({ ...p, numero: (p.numero ?? (i+1)) }));
-
-      return mergedPlayers;
     }
 
-    // ---------- Render players table ----------
-    function renderPlayersTable(list) {
-      playersTbody.innerHTML = "";
+    function renderTable(list){
       if (!list.length) {
-        playersTbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:18px;">Aucun joueur pour le moment.</td></tr>`;
-        totalPlayersEl.textContent = 0;
-        winnersCountEl.textContent = 0;
-        winnersLeftEl.textContent = 20;
-        nextWinnerEl.textContent = 10;
+        tbody.innerHTML = "<tr><td colspan='7'>Aucun joueur.</td></tr>";
+        totalPlayers.textContent = 0;
+        winnersCount.textContent = 0;
+        winnersLeft.textContent = 20;
+        nextWinner.textContent = 10;
         return;
       }
-
-      const total = list.length;
-      const winnersCount = list.filter(p => isWinnerResultText(p.resultat)).length;
-
-      totalPlayersEl.textContent = total;
-      winnersCountEl.textContent = winnersCount;
-      winnersLeftEl.textContent = Math.max(0, 20 - winnersCount);
-      nextWinnerEl.textContent = computeNextWinner(total);
-
-      for (const p of list) {
+      let winners = 0;
+      tbody.innerHTML = "";
+      list.forEach((p, idx) => {
         const tr = document.createElement("tr");
-
-        const paidStr = p.paye ? "✅" : "❌";
-        const statusStr = p.status ?? (p.paye ? "validated" : "pending");
-
+        const win = isWinnerText(p.resultat);
+        if (win) winners++;
         tr.innerHTML = `
-          <td>${p.numero ?? "-"}</td>
-          <td>${p.name ?? p.docId ?? "-"}</td>
-          <td>${p.resultat ? (isWinnerResultText(p.resultat) ? ("<span class='winner'>"+p.resultat+"</span>") : ("<span class='lost'>"+p.resultat+"</span>")) : "-"}</td>
-          <td>${formatDate(p.date) ?? "-"}</td>
-          <td>${paidStr}</td>
-          <td>${statusStr}</td>
+          <td>${p.numero ?? (idx+1)}</td>
+          <td>${p.name ?? p.nom ?? p.id ?? "-"}</td>
+          <td>${p.resultat ?? "-"}</td>
+          <td>${p.date ? new Date(p.date).toLocaleString() : "-"}</td>
+          <td>${p.paye || p.paid ? "✅" : "❌"}</td>
+          <td>${p.status ?? (p.paye ? "validated" : "pending")}</td>
           <td class="actions">
-            <button class="btn-gold" data-id="${p.docId}" data-num="${p.numero}" onclick="validatePayment(event)">Valider</button>
-            <button class="btn-green" data-id="${p.docId}" data-num="${p.numero}" onclick="copyCode(event)">Copier code</button>
-            <button class="btn-muted" data-id="${p.docId}" onclick="toggleStatus(event)">${p.status === 'validated' ? 'Annuler' : 'Marquer validé'}</button>
-            <button class="btn-danger" data-id="${p.docId}" onclick="deletePlayer(event)">Supprimer</button>
+            <button class="btn-gold" data-id="${p.id}" data-num="${p.numero ?? (idx+1)}" onclick="validatePlayer(event)">Valider</button>
+            <button class="btn-muted" data-id="${p.id}" onclick="deletePlayer(event)">Supprimer</button>
           </td>
         `;
-
-        playersTbody.appendChild(tr);
-      }
-    }
-
-    // Expose functions to window so inline onclick can call them
-    window.validatePayment = async function(e) {
-      if (!adminLogged) return alert("🔐 Connecte-toi d'abord en tant qu'admin.");
-      const button = e.currentTarget;
-      const docId = button.dataset.id;
-      const numero = button.dataset.num;
-
-      const entered = prompt("Mot de passe admin pour valider ce paiement :");
-      if (entered !== VALIDATE_PWD) return alert("❌ Mot de passe incorrect.");
-
-      try {
-        // try update in both possible collections
-        if (docId) {
-          // attempt update both 'joueurs' and 'players'
-          try { await updateDoc(doc(db, "joueurs", docId), { paye:true, status:"validated", validatedAt: new Date().toISOString() }); } catch(e){}
-          try { await updateDoc(doc(db, "players", docId), { paid:true, status:"validated", validatedAt: new Date().toISOString() }); } catch(e){}
-          try { await updateDoc(doc(db, "payments", docId), { paid:true, status:"validated", validatedAt: new Date().toISOString() }); } catch(e){}
-        }
-
-        // also create a normalized doc in 'joueurs' if needed, for consistency
-        if (docId) {
-          try {
-            await setDoc(doc(db, "joueurs", docId), { paye:true, status:"validated"}, { merge:true });
-          } catch(e){}
-        }
-
-        alert("✅ Paiement validé pour le joueur " + (numero || docId));
-        await refreshAll();
-      } catch (err) {
-        console.error(err);
-        alert("❌ Erreur lors de la validation.");
-      }
-    };
-
-    window.copyCode = function(e) {
-      if (!adminLogged) return alert("🔐 Connecte-toi d'abord.");
-      const btn = e.currentTarget;
-      const numero = btn.dataset.num || "";
-      const code = `MAEKMO-${numero}-${Math.floor(1000 + Math.random()*9000)}`;
-      navigator.clipboard.writeText(code).then(() => {
-        alert("Code copié : " + code + " — envoie-le au joueur pour qu'il l'entre dans la page 'J'ai déjà payé'.");
-      }).catch(()=> {
-        prompt("Voici le code (copie manuellement):", code);
+        tbody.appendChild(tr);
       });
-    };
-
-    window.toggleStatus = async function(e) {
-      if (!adminLogged) return alert("🔐 Connecte-toi d'abord.");
-      const btn = e.currentTarget;
-      const docId = btn.dataset.id;
-      const newStatus = btn.textContent.trim() === "Annuler" ? "pending" : "validated";
-      if (!confirm("Confirmer la mise à jour du statut ?")) return;
-      try {
-        await updateDoc(doc(db, "joueurs", docId), { status: newStatus });
-        await updateDoc(doc(db, "players", docId), { status: newStatus }).catch(()=>{});
-        alert("Statut mis à jour.");
-        await refreshAll();
-      } catch (err) {
-        console.error(err);
-        alert("Erreur lors de la mise à jour.");
-      }
-    };
-
-    window.deletePlayer = async function(e) {
-      if (!adminLogged) return alert("🔐 Connecte-toi d'abord.");
-      const docId = e.currentTarget.dataset.id;
-      if (!confirm("Supprimer ce joueur définitivement ?")) return;
-      try {
-        await deleteDoc(doc(db, "joueurs", docId)).catch(()=>{});
-        await deleteDoc(doc(db, "players", docId)).catch(()=>{});
-        await deleteDoc(doc(db, "payments", docId)).catch(()=>{});
-        alert("✅ Joueur supprimé.");
-        await refreshAll();
-      } catch (err) {
-        console.error(err);
-        alert("Erreur lors de la suppression.");
-      }
-    };
-
-    // ---------- Export CSV ----------
-    function exportCSV(rows) {
-      if (!rows || !rows.length) return alert("Aucune donnée à exporter");
-      const headers = ["numero","name","resultat","date","paye","status","source","docId"];
-      const lines = [headers.join(",")];
-      for (const r of rows) {
-        const vals = headers.map(h => {
-          const v = r[h] ?? "";
-          // escape quotes
-          return `"${String(v).replace(/\"/g,'""')}"`;
-        });
-        lines.push(vals.join(","));
-      }
-      const csv = lines.join("\n");
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `maekmo_players_${new Date().toISOString().slice(0,19)}.csv`;
-      a.click();
-      URL.revokeObjectURL(url);
+      totalPlayers.textContent = list.length;
+      winnersCount.textContent = winners;
+      winnersLeft.textContent = Math.max(0, 20 - winners);
+      nextWinner.textContent = computeNext(list.length);
     }
 
-    // ---------- Firestore cleanup ----------
-    async function deleteCollection(name) {
+    window.validatePlayer = async function(e){
+      if (!logged) return alert("Connecte-toi d'abord.");
+      const id = e.currentTarget.dataset.id;
+      const numero = e.currentTarget.dataset.num;
+      const pwd = prompt("Mot de passe validate:");
+      if (pwd !== VALIDATE_PWD) return alert("Mot de passe invalide.");
       try {
-        const snaps = await getDocs(collection(db, name));
-        for (const d of snaps.docs) {
-          await deleteDoc(doc(db, name, d.id));
-        }
-      } catch (err) {
-        console.warn("Suppression collection", name, err);
-      }
-    }
+        await updateDoc(doc(db,"joueurs",id), { paye:true, status:"validated", validatedAt: new Date().toISOString() });
+        // also try players
+        try { await updateDoc(doc(db,"players",id), { paid:true, status:"validated", validatedAt: new Date().toISOString() }); } catch(e){}
+        alert("Paiement validé pour joueur " + numero);
+        await loadPlayers();
+      } catch (err) { console.error(err); alert("Erreur validation."); }
+    };
 
-    // ---------- Refresh / Load ----------
-    async function refreshAll() {
-      const players = await loadAllPlayers();
-      renderPlayersTable(players);
-    }
+    window.deletePlayer = async function(e){
+      if (!logged) return alert("Connecte-toi d'abord.");
+      const id = e.currentTarget.dataset.id;
+      if (!confirm("Supprimer ce joueur ?")) return;
+      try {
+        await deleteDoc(doc(db,"joueurs",id)).catch(()=>{});
+        await deleteDoc(doc(db,"players",id)).catch(()=>{});
+        alert("Supprimé.");
+        await loadPlayers();
+      } catch(err){ console.error(err); alert("Erreur suppression."); }
+    };
 
-    // ---------- Event handlers ----------
     loginBtn.addEventListener("click", async () => {
-      const entered = adminPassInput.value || prompt("Entrez le mot de passe administrateur:");
-      if (entered !== ADMIN_LOGIN_PWD) {
-        alert("❌ Mot de passe admin incorrect.");
-        adminPassInput.value = "";
-        return;
-      }
-      adminLogged = true;
+      const val = adminPwd.value.trim() || prompt("Mot de passe admin:");
+      if (val !== ADMIN_LOGIN) { alert("Mot de passe admin incorrect."); adminPwd.value = ""; return; }
+      logged = true;
+      adminPwd.value = "";
       panel.style.display = "block";
-      adminPassInput.value = "";
-      await refreshAll();
+      await loadPlayers();
     });
 
-    refreshBtn.addEventListener("click", async () => {
-      if (!adminLogged) return alert("🔐 Connecte-toi d'abord.");
-      await refreshAll();
-    });
+    refreshBtn.addEventListener("click", async ()=>{ if(!logged) return alert("Connecte-toi d'abord."); await loadPlayers(); });
 
-    exportBtn.addEventListener("click", async () => {
-      if (!adminLogged) return alert("🔐 Connecte-toi d'abord.");
-      exportCSV(mergedPlayers);
+    exportBtn.addEventListener("click", () => {
+      if (!logged) return alert("Connecte-toi d'abord.");
+      // export currentList to CSV
+      if (!currentList.length) return alert("Rien à exporter");
+      const headers = ["numero","name","resultat","date","paye","status","id"];
+      const rows = [headers.join(",")];
+      currentList.forEach(r => {
+        rows.push(headers.map(h => `"${(r[h]??"").toString().replace(/\"/g,'""')}"`).join(","));
+      });
+      const blob = new Blob([rows.join("\n")], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a"); a.href = url; a.download = "maekmo_players.csv"; a.click();
+      URL.revokeObjectURL(url);
     });
 
     cleanupBtn.addEventListener("click", async () => {
-      if (!adminLogged) return alert("🔐 Connecte-toi d'abord.");
-      const pwd = prompt("Mot de passe de réinitialisation :");
-      if (pwd !== RESET_PWD) return alert("❌ Mot de passe incorrect.");
-      if (!confirm("⚠️ Confirmer la suppression de toutes les collections (joueurs, players, payments, game_state) ?")) return;
+      if (!logged) return alert("Connecte-toi d'abord.");
+      const pwd = prompt("Mot de passe reset:");
+      if (pwd !== RESET_PWD) return alert("Mot de passe reset invalide.");
+      if (!confirm("Confirmer suppression collections joueurs, players, payments, game_state ?")) return;
       try {
-        await deleteCollection("joueurs");
-        await deleteCollection("players");
-        await deleteCollection("payments");
-        await deleteCollection("game_state");
-        alert("✅ Firestore réinitialisé !");
-        await refreshAll();
-      } catch (err) {
-        console.error(err);
-        alert("Erreur lors de la réinitialisation : " + err.message);
-      }
+        // delete collections (non-batch, may be slow)
+        const cols = ["joueurs","players","payments","game_state"];
+        for (const c of cols) {
+          const snaps = await getDocs(collection(db,c));
+          for (const d of snaps.docs) { await deleteDoc(doc(db,c,d.id)); }
+        }
+        alert("Firestore réinitialisé.");
+        await loadPlayers();
+      } catch(err){ console.error(err); alert("Erreur reset: "+err.message); }
     });
 
-    // initial no-op
-    // you can auto-login in dev by setting adminPassInput.value = 'maekmo2025' and clicking
   </script>
 </body>
 </html>
