@@ -114,6 +114,77 @@
     };
 
     loadPlayers();
-  </script>
-</body>
-</html>
+
+    <!-- 🔥 FIRESTORE CLEANUP BUTTON -->
+<button id="cleanupButton" style="
+  margin-top:20px;
+  padding:10px 16px;
+  background:#d9534f;
+  color:white;
+  font-weight:bold;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+">
+  🧨 Réinitialisation complète Firestore
+</button>
+
+<script type="module">
+  import {
+    getFirestore,
+    collection,
+    getDocs,
+    deleteDoc,
+    doc
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAZcpcC_7l6wYN4SJUGa9dBbEa_ekV1n20",
+    authDomain: "ma-ek-mo-grattage.firebaseapp.com",
+    projectId: "ma-ek-mo-grattage",
+    storageBucket: "ma-ek-mo-grattage.firebasestorage.app",
+    messagingSenderId: "478221366203",
+    appId: "1:478221366203:web:ffb64fe9cbb7dc0aa20a9e",
+    measurementId: "G-BZSKRGV3PS"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // 🧨 CLEANUP FUNCTION
+  async function deleteCollection(name) {
+    const snap = await getDocs(collection(db, name));
+    for (const docu of snap.docs) {
+      await deleteDoc(doc(db, name, docu.id));
+    }
+  }
+
+  document.getElementById("cleanupButton").addEventListener("click", async () => {
+    const pwd = prompt("Mot de passe administrateur (réinitialisation) :");
+
+    if (pwd !== "reset2025") {
+      alert("❌ Mot de passe incorrect");
+      return;
+    }
+
+    if (!confirm("⚠️ CONFIRMATION : Voulez-vous vraiment supprimer TOUTE la base Firestore ?")) {
+      return;
+    }
+
+    try {
+      // Collections to wipe
+      await deleteCollection("players");
+      await deleteCollection("payments");
+      await deleteCollection("game_state");
+
+      alert("✅ Base Firestore entièrement réinitialisée !");
+    } catch (err) {
+      console.error(err);
+      alert("❌ Erreur lors de la réinitialisation Firestore");
+    }
+  });
+</script>
+
+
