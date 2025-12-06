@@ -43,11 +43,15 @@
     }
 
     .video-container {
+      width:100%;
+      display:flex;
+      justify-content:center;
       margin:10px 0;
     }
     video {
       width:180px;
       border-radius:10px;
+      display:none;
     }
 
     .result {
@@ -67,11 +71,7 @@
       transform:translateX(-50%);
       padding:10px;
       opacity:0;
-      transition:opacity 1.2s ease-in-out;
-    }
-
-    .result.visible {
-      opacity:1;
+      transition:opacity 1s ease;
     }
 
     .admin button {
@@ -85,23 +85,9 @@
       margin-top:15px;
     }
 
-    /* ---- PAGE D’ACCUEIL ---- */
-    #payment-section {
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      text-align:center;
-    }
-
-    #qr-container img {
-      border-radius:10px;
-      box-shadow:0 0 8px rgba(0,0,0,0.2);
-    }
-
     @media(max-width:600px){
       .container{ width:95%; }
-      video{ width:140px; }
+      video{ width:150px; }
       canvas{ width:260px; height:140px; }
       .result{ width:260px; height:140px; }
     }
@@ -110,34 +96,12 @@
 
 <body>
 
-  <div class="container" id="payment-container">
-    <h1>MA EK MO — Rhums arrangés & punchs</h1>
-    <h2>Paiement du jeu (2€)</h2>
-
-    <div id="payment-section">
-      <button id="wero-btn"
-        style="background-color:#28a745;color:white;padding:10px 20px;border:none;border-radius:10px;cursor:pointer;font-size:1em;font-weight:bold;">
-        💸 Payer par Wero (2€)
-      </button>
-
-      <div id="qr-container" class="hidden" style="display:none; margin-top:20px;">
-        <p>📱 Scanne ce QR code avec ton application bancaire Wero :</p>
-        <img src="qrcode-wero.png" alt="QR Wero" width="180"/>
-      </div>
-
-      <button id="already-paid-btn"
-        style="margin-top:20px;background-color:#f0ad4e;color:white;padding:10px 20px;border:none;border-radius:10px;cursor:pointer;font-size:1em;font-weight:bold;">
-        ✅ J’ai déjà payé
-      </button>
-    </div>
-  </div>
-
-  <div class="container" id="game-container" style="display:none;">
+  <div class="container">
     <h1>MA EK MO — Rhums arrangés & punchs</h1>
     <p id="player-number">Chargement...</p>
 
     <div class="video-container">
-      <video id="bouchon-video" src="bouchon2.mp4" muted loop></video>
+      <video id="bouchon-video" src="bouchon2.mp4" muted loop playsinline></video>
     </div>
 
     <div style="position:relative; display:inline-block;">
@@ -150,7 +114,7 @@
     </div>
   </div>
 
-  <!-- 📧 EmailJS SDK -->
+  <!-- 📧 EmailJS -->
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
   <script>
     (function() {
@@ -158,7 +122,7 @@
     })();
   </script>
 
-  <!-- 🔥 Firebase + Jeu -->
+  <!-- 🔥 Firebase + jeu -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -176,73 +140,67 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const paymentContainer = document.getElementById("payment-container");
-    const gameContainer = document.getElementById("game-container");
-    const weroBtn = document.getElementById("wero-btn");
-    const alreadyPaidBtn = document.getElementById("already-paid-btn");
-    const qrContainer = document.getElementById("qr-container");
+    const resultDiv = document.getElementById("result");
     const canvas = document.getElementById("scratch-card");
     const ctx = canvas.getContext("2d");
-    const resultDiv = document.getElementById("result");
     const video = document.getElementById("bouchon-video");
     const playerNumber = document.getElementById("player-number");
 
-    let playerIndex = localStorage.getItem("playerIndex");
+    let currentPlayerNumber = 0;
     let hasPlayed = localStorage.getItem("hasPlayed") === "true";
     let revealed = false;
 
-    // Lien deeplink Wero
-    const weroLink = "wero://pay?iban=FR3420041010180247172N01586&amount=2.00&name=MA%20EK%20MO&message=Jeu%20de%20grattage";
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    /* 🎁 WINNERS MAP (20 winners for 200 players) */
+    const winners = {
+      10: "🎉 Félicitations tu as gagné 1 magnet rum'aide !",
+      20: "🎉 Félicitations tu as gagné 1 verre arum'attisée!",
+      30: "🎉 Félicitations tu as gagné 1 fiole thym!",
+      40: "🎉 Félicitations tu as gagné 1 magnet arum'attisée!",
+      50: "🎉 Félicitations tu as gagné 1 verre rum'aide!",
+      60: "🎉 Félicitations tu as gagné 1 fiole citron!",
+      70: "🎉 Félicitations tu as gagné 1 magnet rum'antan !",
+      80: "🎉 Félicitations tu as gagné 1 verre rum'antique !",
+      90: "🎉 Félicitations tu as gagné 1 fiole moringa !",
+      100: "🎉 Félicitations tu as gagné 1 coffret arum'attisée !",
+      110: "🎉 Félicitations tu as gagné 1 magnet rum'antique !",
+      120: "🎉 Félicitations tu as gagné 1 fiole gingembre !",
+      130: "🎉 Félicitations tu as gagné 1 verre rum'antan!",
+      140: "🎉 Félicitations tu as gagné 1 verre + paille arum'attisée!",
+      150: "🎉 Félicitations tu as gagné 1 coffret rum'aide !",
+      160: "🎉 Félicitations tu as gagné 1 fiole citronnelle !",
+      170: "🎉 Félicitations tu as gagné 1 verre + paille rum'antique!",
+      180: "🎉 Félicitations tu as gagné 1 fiole cannelle !",
+      190: "🎉 Félicitations tu as gagné 1 verre + paille rum'antan!",
+      200: "🎉 Félicitations tu as gagné 1 coffret rum'antique!"
+    };
 
-    weroBtn.addEventListener("click", () => {
-      if (isMobile) {
-        window.location.href = weroLink;
-        setTimeout(() => alert("Si ton application bancaire ne s’est pas ouverte, vérifie que Wero est installée."), 2000);
-      } else {
-        qrContainer.style.display = "block";
-      }
-    });
-
-    alreadyPaidBtn.addEventListener("click", () => {
-      const code = prompt("Entrez le code reçu après paiement ou laissez vide si confirmé par l’admin :");
-      if (code !== null) {
-        localStorage.setItem("accessGranted", "true");
-        paymentContainer.style.display = "none";
-        gameContainer.style.display = "block";
-        setup();
-      }
-    });
-
-    async function getNextPlayerNumber() {
-      const snapshot = await getDocs(collection(db, "joueurs"));
-      return snapshot.size + 1;
-    }
+    const loseMessage = "👏🏾 Bravo tu obtiens une réduction de -10% dès 30€ d'achat. Offre non cumulable.";
 
     async function setup() {
-      if (!playerIndex) {
-        playerIndex = await getNextPlayerNumber();
-        localStorage.setItem("playerIndex", playerIndex);
-      }
-      playerNumber.textContent = "Joueur n°" + playerIndex;
+      const docs = await getDocs(collection(db, "joueurs"));
+      currentPlayerNumber = docs.size + 1;
 
-      const result = localStorage.getItem("resultat");
-      if (result) {
-        showResult(result);
+      if (currentPlayerNumber > 200) {
+        playerNumber.textContent = "🎉 Jeu terminé ! 200 joueurs atteints.";
         return;
       }
 
-      ctx.fillStyle = "#d4af37";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.globalCompositeOperation = "destination-out";
+      playerNumber.textContent = "Joueur n°" + currentPlayerNumber;
 
-      canvas.addEventListener("mousedown", startScratching);
-      canvas.addEventListener("touchstart", startScratching);
+      if (!localStorage.getItem("resultat")) {
+        ctx.fillStyle = "#d4af37";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.globalCompositeOperation = "destination-out";
+
+        canvas.addEventListener("mousedown", start);
+        canvas.addEventListener("touchstart", start);
+      } else {
+        showResult(localStorage.getItem("resultat"));
+      }
     }
 
-    function startScratching(e) {
+    function start() {
       if (hasPlayed) return;
-      revealed = false;
       canvas.addEventListener("mousemove", scratch);
       canvas.addEventListener("touchmove", scratch);
       canvas.addEventListener("mouseup", reveal);
@@ -260,56 +218,55 @@
     }
 
     async function reveal() {
-      if (revealed || hasPlayed) return;
+      if (hasPlayed || revealed) return;
       revealed = true;
       hasPlayed = true;
       localStorage.setItem("hasPlayed", "true");
 
-      const isWinner = Math.random() < 5 / 200;
-      const choice = isWinner
-        ? "🎉 Félicitations tu as gagné !"
-        : "👏🏾 Bravo tu obtiens une réduction de -10% dès 30€ d'achat.";
+      const choice = winners[currentPlayerNumber] ?? loseMessage;
 
-      resultDiv.textContent = choice;
-      resultDiv.classList.add("visible");
-
+      showResult(choice);
       localStorage.setItem("resultat", choice);
+
       video.style.display = "block";
       video.play();
 
       await addDoc(collection(db, "joueurs"), {
-        numero: playerIndex,
+        numero: currentPlayerNumber,
         resultat: choice,
         date: new Date().toISOString(),
       });
 
-      emailjs.send("service_cqjooc5", "template_ct2ucqj", {
-        to_name: "Admin MA EK MO",
-        message: `Le joueur n°${playerIndex} a joué.\nRésultat : ${choice}`,
-        reply_to: "contact@maekmo.com",
+      emailjs.send("service_cqjooc5","template_ct2ucqj",{
+        to_name:"Admin MA EK MO",
+        message:`Le joueur n°${currentPlayerNumber} a joué.\nRésultat : ${choice}`,
+        reply_to:"contact@maekmo.com",
       });
-
-      canvas.removeEventListener("mousemove", scratch);
-      canvas.removeEventListener("touchmove", scratch);
     }
 
-    document.getElementById("reset-btn").addEventListener("click", () => {
-      const pass = prompt("Mot de passe admin :");
-      if (pass === "maekmo2025") {
-        localStorage.clear();
-        alert("✅ Jeu réinitialisé !");
-        location.reload();
-      } else {
-        alert("❌ Mot de passe incorrect !");
+    function showResult(msg) {
+      resultDiv.textContent = msg;
+      resultDiv.style.opacity = 1;
+    }
+
+    document.getElementById("reset-btn").addEventListener("click", async () => {
+      const pass = prompt("Mot de passe admin 🔐:");
+
+      if (pass !== "maekmo2025") {
+        alert("❌ Mot de passe incorrect.");
+        return;
       }
+
+      const docs = await getDocs(collection(db, "joueurs"));
+      docs.forEach(async d => await deleteDoc(doc(db, "joueurs", d.id)));
+
+      localStorage.clear();
+      alert("🔥 Jeu totalement réinitialisé !");
+      location.reload();
     });
 
-    // Si l’accès a été autorisé, afficher le jeu
-    if (localStorage.getItem("accessGranted") === "true") {
-      paymentContainer.style.display = "none";
-      gameContainer.style.display = "block";
-      setup();
-    }
+    setup();
   </script>
+
 </body>
 </html>
