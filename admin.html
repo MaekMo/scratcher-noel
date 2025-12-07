@@ -3,36 +3,40 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>MA EK MO — Admin (complet)</title>
+  <title>MA EK MO — Administration</title>
   <style>
-    body{ margin:0; font-family:'Poppins',sans-serif; background:url('Prix2.PNG') center/cover no-repeat fixed; padding:24px; }
-    .card{ max-width:1100px; margin:0 auto; background:rgba(255,255,255,0.9); padding:18px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.1); }
-    h1{ margin:0 0 6px 0; }
-    .controls{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
-    input[type=password]{ padding:8px;border-radius:8px;border:1px solid #ddd; }
-    button{ padding:8px 12px;border-radius:8px;border:0; font-weight:700; cursor:pointer; }
+    body{ margin:0; font-family:'Poppins',sans-serif; background:url('Prix2.PNG') center/cover no-repeat fixed; padding:20px; display:flex; justify-content:center; }
+    .card{ width:95%; max-width:1100px; background:rgba(255,255,255,0.9); border-radius:14px; padding:18px; box-shadow:0 10px 30px rgba(0,0,0,0.08); }
+    h1{ margin:0 0 8px 0; }
+    .controls{ display:flex; gap:10px; align-items:center; margin-bottom:12px; flex-wrap:wrap; }
+    input[type=password]{ padding:8px; border-radius:8px; border:1px solid #ddd; }
+    button{ padding:8px 12px; border-radius:8px; border:0; font-weight:700; cursor:pointer; }
     .btn-gold{ background:#d4af37; color:#000; }
-    .btn-danger{ background:#d9534f;color:#fff; }
-    .btn-muted{ background:#f0f0f0;color:#000; }
-    table{ width:100%; border-collapse:collapse; margin-top:12px; font-size:14px; }
+    .btn-danger{ background:#d9534f; color:#fff; }
+    .btn-muted{ background:#f0f0f0; color:#000; }
+    table{ width:100%; border-collapse:collapse; font-size:14px; margin-top:12px; }
     th, td{ padding:10px; border-bottom:1px solid #eee; text-align:left; }
     th{ background:linear-gradient(180deg, rgba(212,175,55,0.14), transparent); }
     .actions{ text-align:right; }
+    .small{ font-size:0.9em; color:#666; }
+    @media(max-width:900px){ .actions{ text-align:left; } }
   </style>
 </head>
 <body>
   <div class="card">
     <h1>MA EK MO — Panneau Admin</h1>
+    <p class="small">Accès protégé — mot de passe pour réinitialisation : <strong>reset2025</strong>. Pour valider un joueur : <strong>validate2025</strong>.</p>
+
     <div class="controls">
-      <input id="adminPwd" type="password" placeholder="Mot de passe admin">
+      <input id="adminPwd" type="password" placeholder="Mot de passe admin (reset)"/>
       <button id="loginBtn" class="btn-gold">Se connecter</button>
       <button id="refreshBtn" class="btn-muted">🔄 Rafraîchir</button>
       <button id="exportBtn" class="btn-muted">📥 Export CSV</button>
-      <button id="cleanupBtn" class="btn-danger">🧨 Reset Firestore</button>
+      <button id="cleanupBtn" class="btn-danger">🧨 Réinitialiser Firestore</button>
     </div>
 
     <div id="panel" style="display:none;">
-      <div style="margin-bottom:12px;">
+      <div style="margin-bottom:10px;">
         <strong>Total joueurs :</strong> <span id="totalPlayers">0</span>
         &nbsp; • &nbsp; <strong>Gagnants :</strong> <span id="winnersCount">0</span>
         &nbsp; • &nbsp; <strong>Gagnants restants :</strong> <span id="winnersLeft">20</span>
@@ -40,9 +44,7 @@
       </div>
 
       <table>
-        <thead>
-          <tr><th>#</th><th>Nom/ID</th><th>Résultat</th><th>Date</th><th>Payé</th><th>Statut</th><th class="actions">Actions</th></tr>
-        </thead>
+        <thead><tr><th>#</th><th>Nom/ID</th><th>Résultat</th><th>Date</th><th>Payé</th><th>Statut</th><th class="actions">Actions</th></tr></thead>
         <tbody id="tbody"></tbody>
       </table>
     </div>
@@ -61,15 +63,15 @@
       appId: "1:478221366203:web:ffb64fe9cbb7dc0aa20a9e",
       measurementId: "G-BZSKRGV3PS"
     };
+
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const ADMIN_LOGIN = "maekmo2025";
-    const VALIDATE_PWD = "validate2025";
     const RESET_PWD = "reset2025";
+    const VALIDATE_PWD = "validate2025";
 
-    const loginBtn = document.getElementById("loginBtn");
     const adminPwd = document.getElementById("adminPwd");
+    const loginBtn = document.getElementById("loginBtn");
     const panel = document.getElementById("panel");
     const tbody = document.getElementById("tbody");
     const totalPlayers = document.getElementById("totalPlayers");
@@ -83,20 +85,20 @@
     let logged = false;
     let currentList = [];
 
-    function isWinnerText(text){ return text && /félicitations|félicitation/i.test(text); }
-    function computeNext(total){ if(total>=200) return "—"; return Math.min(200, Math.ceil((total+1)/10)*10); }
+    function isWinnerText(text) { return text && /félicitations|félicitation/i.test(text); }
+    function computeNext(total) { if (total >= 200) return "—"; return Math.min(200, Math.ceil((total+1)/10)*10); }
 
     async function loadPlayers() {
       tbody.innerHTML = "<tr><td colspan='7'>Chargement…</td></tr>";
       try {
-        const snaps = await getDocs(collection(db,"joueurs"));
-        const rows = snaps.docs.map(d => ({ id:d.id, ...d.data() }));
-        // fallback to 'players' if empty
-        if (!rows.length) {
+        let snaps = await getDocs(collection(db, "joueurs"));
+        let rows = snaps.docs.map(d => ({ id:d.id, ...d.data() }));
+        if (!rows.length) { 
           const snaps2 = await getDocs(collection(db,"players"));
-          rows.push(...snaps2.docs.map(d => ({ id:d.id, ...d.data() })));
+          rows = snaps2.docs.map(d=>({ id:d.id, ...d.data() }));
         }
-        // normalize & sort by numero or date
+
+        // normalize & sort
         rows.sort((a,b) => {
           const na = Number(a.numero) || 0;
           const nb = Number(b.numero) || 0;
@@ -105,17 +107,18 @@
           const dbv = b.date ? new Date(b.date).getTime() : 0;
           return da - dbv;
         });
+
         currentList = rows;
         renderTable(rows);
       } catch (err) {
         console.error(err);
-        tbody.innerHTML = "<tr><td colspan='7' class='error'>Erreur en lecture Firestore. Vérifiez vos règles et la console.</td></tr>";
+        tbody.innerHTML = "<tr><td colspan='7'>Erreur Firestore — vérifier la console.</td></tr>";
       }
     }
 
-    function renderTable(list){
+    function renderTable(list) {
       if (!list.length) {
-        tbody.innerHTML = "<tr><td colspan='7'>Aucun joueur.</td></tr>";
+        tbody.innerHTML = "<tr><td colspan='7'>Aucun joueur</td></tr>";
         totalPlayers.textContent = 0;
         winnersCount.textContent = 0;
         winnersLeft.textContent = 20;
@@ -125,18 +128,19 @@
       let winners = 0;
       tbody.innerHTML = "";
       list.forEach((p, idx) => {
-        const tr = document.createElement("tr");
+        const num = p.numero ?? (idx+1);
         const win = isWinnerText(p.resultat);
         if (win) winners++;
+        const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td>${p.numero ?? (idx+1)}</td>
+          <td>${num}</td>
           <td>${p.name ?? p.nom ?? p.id ?? "-"}</td>
           <td>${p.resultat ?? "-"}</td>
           <td>${p.date ? new Date(p.date).toLocaleString() : "-"}</td>
-          <td>${p.paye || p.paid ? "✅" : "❌"}</td>
-          <td>${p.status ?? (p.paye ? "validated" : "pending")}</td>
+          <td>${p.paid || p.paye ? "✅" : "❌"}</td>
+          <td>${p.status ?? (p.paid||p.paye ? "validated" : "pending")}</td>
           <td class="actions">
-            <button class="btn-gold" data-id="${p.id}" data-num="${p.numero ?? (idx+1)}" onclick="validatePlayer(event)">Valider</button>
+            <button class="btn-gold" data-id="${p.id}" data-num="${num}" onclick="validatePlayer(event)">Valider</button>
             <button class="btn-muted" data-id="${p.id}" onclick="deletePlayer(event)">Supprimer</button>
           </td>
         `;
@@ -148,22 +152,22 @@
       nextWinner.textContent = computeNext(list.length);
     }
 
-    window.validatePlayer = async function(e){
+    window.validatePlayer = async function(e) {
       if (!logged) return alert("Connecte-toi d'abord.");
-      const id = e.currentTarget.dataset.id;
-      const numero = e.currentTarget.dataset.num;
-      const pwd = prompt("Mot de passe validate:");
+      const btn = e.currentTarget;
+      const id = btn.dataset.id;
+      const numero = btn.dataset.num;
+      const pwd = prompt("Mot de passe pour valider ce paiement :");
       if (pwd !== VALIDATE_PWD) return alert("Mot de passe invalide.");
       try {
-        await updateDoc(doc(db,"joueurs",id), { paye:true, status:"validated", validatedAt: new Date().toISOString() });
-        // also try players
-        try { await updateDoc(doc(db,"players",id), { paid:true, status:"validated", validatedAt: new Date().toISOString() }); } catch(e){}
-        alert("Paiement validé pour joueur " + numero);
+        await updateDoc(doc(db, "joueurs", id), { paye:true, status:"validated", validatedAt: new Date().toISOString() }).catch(()=>{});
+        await updateDoc(doc(db, "players", id), { paid:true, status:"validated", validatedAt: new Date().toISOString() }).catch(()=>{});
+        alert("Paiement validé pour le joueur " + numero);
         await loadPlayers();
       } catch (err) { console.error(err); alert("Erreur validation."); }
     };
 
-    window.deletePlayer = async function(e){
+    window.deletePlayer = async function(e) {
       if (!logged) return alert("Connecte-toi d'abord.");
       const id = e.currentTarget.dataset.id;
       if (!confirm("Supprimer ce joueur ?")) return;
@@ -172,42 +176,39 @@
         await deleteDoc(doc(db,"players",id)).catch(()=>{});
         alert("Supprimé.");
         await loadPlayers();
-      } catch(err){ console.error(err); alert("Erreur suppression."); }
+      } catch (err) { console.error(err); alert("Erreur suppression."); }
     };
 
     loginBtn.addEventListener("click", async () => {
-      const val = adminPwd.value.trim() || prompt("Mot de passe admin:");
-      if (val !== ADMIN_LOGIN) { alert("Mot de passe admin incorrect."); adminPwd.value = ""; return; }
+      const val = adminPwd.value.trim() || prompt("Mot de passe admin (reset) :");
+      if (val !== RESET_PWD) { alert("Mot de passe incorrect."); adminPwd.value=""; return; }
       logged = true;
       adminPwd.value = "";
       panel.style.display = "block";
       await loadPlayers();
     });
 
-    refreshBtn.addEventListener("click", async ()=>{ if(!logged) return alert("Connecte-toi d'abord."); await loadPlayers(); });
+    refreshBtn.addEventListener("click", async () => { if (!logged) return alert("Connecte-toi d'abord."); await loadPlayers(); });
 
     exportBtn.addEventListener("click", () => {
       if (!logged) return alert("Connecte-toi d'abord.");
-      // export currentList to CSV
-      if (!currentList.length) return alert("Rien à exporter");
-      const headers = ["numero","name","resultat","date","paye","status","id"];
-      const rows = [headers.join(",")];
+      if (!currentList || !currentList.length) return alert("Rien à exporter");
+      const headers = ["numero","name","resultat","date","paid","status","id"];
+      const lines = [headers.join(",")];
       currentList.forEach(r => {
-        rows.push(headers.map(h => `"${(r[h]??"").toString().replace(/\"/g,'""')}"`).join(","));
+        lines.push(headers.map(h => `"${(r[h]??"").toString().replace(/\"/g,'""')}"`).join(","));
       });
-      const blob = new Blob([rows.join("\n")], { type: "text/csv" });
+      const blob = new Blob([lines.join("\n")], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement("a"); a.href = url; a.download = "maekmo_players.csv"; a.click();
-      URL.revokeObjectURL(url);
+      const a = document.createElement("a"); a.href = url; a.download = "maekmo_players.csv"; a.click(); URL.revokeObjectURL(url);
     });
 
     cleanupBtn.addEventListener("click", async () => {
       if (!logged) return alert("Connecte-toi d'abord.");
-      const pwd = prompt("Mot de passe reset:");
+      const pwd = prompt("Mot de passe reset :");
       if (pwd !== RESET_PWD) return alert("Mot de passe reset invalide.");
       if (!confirm("Confirmer suppression collections joueurs, players, payments, game_state ?")) return;
       try {
-        // delete collections (non-batch, may be slow)
         const cols = ["joueurs","players","payments","game_state"];
         for (const c of cols) {
           const snaps = await getDocs(collection(db,c));
@@ -215,7 +216,7 @@
         }
         alert("Firestore réinitialisé.");
         await loadPlayers();
-      } catch(err){ console.error(err); alert("Erreur reset: "+err.message); }
+      } catch (err) { console.error(err); alert("Erreur reset: "+err.message); }
     });
 
   </script>
