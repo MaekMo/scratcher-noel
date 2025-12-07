@@ -6,48 +6,65 @@
   <title>MA EK MO – Jeu de grattage</title>
   <style>
     body{ margin:0; font-family:'Poppins',sans-serif; background:url('Prix2.PNG') center/cover no-repeat fixed; display:flex; align-items:center; justify-content:center; height:100vh; }
-    .container{ background:rgba(255,255,255,0.8); border-radius:20px; padding:20px; width:90%; max-width:420px; text-align:center; backdrop-filter:blur(4px); box-shadow:0 0 12px rgba(255,215,0,0.6); }
-    h1,#player-number{ color:#000; font-weight:600; }
+    .container{ background:rgba(255,255,255,0.8); border-radius:20px; padding:20px; width:90%; max-width:420px; text-align:center; backdrop-filter:blur(4px); box-shadow:0 0 12px rgba(255,215,0,0.6); position:relative; }
+    h1,#player-number{ color:#000; font-weight:600; margin:0; }
+    .note { color:#666; font-size:0.95em; margin-top:6px; }
+    .pay-area { margin:12px 0; }
+    .pay-input { padding:10px; border-radius:8px; border:1px solid #ddd; width:70%; font-size:1em; }
+    .pay-btn { background:#d4af37; color:#000; border:none; padding:10px 14px; border-radius:8px; font-weight:700; cursor:pointer; margin-left:8px; }
     canvas{ width:300px; height:160px; border-radius:14px; margin-top:10px; cursor:pointer; box-shadow:0 0 10px rgba(255,215,0,0.8); }
-    .video-container{ display:flex; justify-content:center; margin:10px 0; }
-    video{ width:180px; border-radius:10px; display:none; }
-    .result{ color:#000; position:absolute; width:300px; height:160px; display:flex; align-items:center; justify-content:center; text-align:center; font-size:1.05em; font-weight:700; pointer-events:none; top:0; left:50%; transform:translateX(-50%); padding:10px; opacity:0; transition:opacity 1s ease; }
+    .video-container{ display:flex; justify-content:center; margin:12px 0; }
+    video{ width:220px; border-radius:12px; display:none; }
+    .result{ color:#000; position:absolute; width:300px; height:160px; display:flex; align-items:center; justify-content:center; text-align:center; font-size:1.05em; font-weight:700; pointer-events:none; top:120px; left:50%; transform:translateX(-50%); padding:10px; opacity:0; transition:opacity 0.9s ease; }
     .result.visible{ opacity:1; }
-    .admin button{ background:gold; color:black; border:none; padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:bold; margin-top:15px; }
-    @media(max-width:600px){ .container{ width:95%; } video{ width:150px; } canvas{ width:260px; height:140px; } .result{ width:260px; height:140px; } }
-    .info { margin-top:12px; color:#666; font-size:0.95em; }
+    .admin-controls{ margin-top:12px; }
+    .admin-controls button{ background:gold; color:black; border:none; padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:bold; margin:4px; }
+    .info { color:#666; font-size:0.9em; margin-top:8px; }
     .error { color:#b00; font-weight:700; }
+    @media(max-width:600px){ .container{ width:95%; } video{ width:180px; } canvas{ width:260px; height:140px; } .result{ width:260px; height:140px; top:110px; } }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>MA EK MO — Rhums arrangés & punchs</h1>
+    <p class="note">Ticket : <strong>5 €</strong> — un joueur = une participation. Admin : entre le mot de passe pour autoriser le joueur.</p>
+
+    <!-- Admin validation input (entered on the tablet before each player) -->
+    <div class="pay-area" id="validationArea">
+      <input id="validateInput" class="pay-input" type="password" placeholder="Mot de passe admin pour valider (ex : validate2025)">
+      <button id="validateBtn" class="pay-btn">Valider</button>
+    </div>
+
     <p id="player-number">Chargement...</p>
 
     <div class="video-container">
-      <video id="bouchon-video" src="bouchon2.mp4" muted loop playsinline></video>
+      <video id="bouchonVideo" src="bouchon2.mp4" muted loop playsinline></video>
     </div>
 
     <div style="position:relative; display:inline-block;">
       <div id="result" class="result"></div>
-      <canvas id="scratch-card" width="300" height="160"></canvas>
+      <canvas id="scratchCanvas" width="300" height="160"></canvas>
     </div>
 
-    <div class="admin">
-      <button id="reset-btn">🔒 Réinitialiser le jeu</button>
+    <div class="admin-controls">
+      <button id="reset-local">🔒 Réinitialiser le jeu (local)</button>
+      <button id="full-reset">🔥 Réinitialiser complètement (Firestore)</button>
+      <button id="open-admin">📊 Admin</button>
     </div>
 
-    <p class="info" id="debug-info"></p>
+    <p id="statusMsg" class="info"></p>
   </div>
 
-  <!-- EmailJS -->
+  <!-- EmailJS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
   <script> (function(){ emailjs.init("1P7PupUaqiHbW50OZ"); })(); </script>
 
+  <!-- Firebase + Game logic -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+    // Firebase config (identique à ton projet)
     const firebaseConfig = {
       apiKey: "AIzaSyAZcpcC_7l6wYN4SJUGa9dBbEa_ekV1n20",
       authDomain: "ma-ek-mo-grattage.firebaseapp.com",
@@ -57,20 +74,28 @@
       appId: "1:478221366203:web:ffb64fe9cbb7dc0aa20a9e",
       measurementId: "G-BZSKRGV3PS"
     };
+
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    // DOM
+    const validateInput = document.getElementById("validateInput");
+    const validateBtn = document.getElementById("validateBtn");
+    const playerNumberEl = document.getElementById("player-number");
+    const statusMsg = document.getElementById("statusMsg");
+    const scratchCanvas = document.getElementById("scratchCanvas");
+    const ctx = scratchCanvas.getContext("2d");
     const resultDiv = document.getElementById("result");
-    const canvas = document.getElementById("scratch-card");
-    const ctx = canvas.getContext("2d");
-    const video = document.getElementById("bouchon-video");
-    const playerNumber = document.getElementById("player-number");
-    const debugInfo = document.getElementById("debug-info");
+    const video = document.getElementById("bouchonVideo");
+    const resetLocalBtn = document.getElementById("reset-local");
+    const fullResetBtn = document.getElementById("full-reset");
+    const openAdminBtn = document.getElementById("open-admin");
 
-    let currentPlayerNumber = 0;
-    let hasPlayed = localStorage.getItem("hasPlayed") === "true";
-    let revealed = false;
+    // Admin passwords
+    const VALIDATE_PWD = "validate2025";
+    const RESET_PWD = "reset2025";
 
+    // Winners mapping (exact texts)
     const winners = {
       10: "🎉 Félicitations tu as gagné 1 magnet rum'aide !",
       20: "🎉 Félicitations tu as gagné 1 verre arum'attisée!",
@@ -93,58 +118,104 @@
       190: "🎉 Félicitations tu as gagné 1 verre + paille rum'antan!",
       200: "🎉 Félicitations tu as gagné 1 coffret rum'antique!"
     };
+
     const loseMessage = "👏🏾 Bravo tu obtiens une réduction de -10% dès 30€ d'achat. Offre non cumulable.";
+    const MAX_PLAYERS = 200;
+    const TICKET_PRICE_EUR = 5;
 
-    async function setup() {
+    // state
+    let playerIndex = Number(localStorage.getItem("playerIndex")) || null;
+    let hasPlayed = localStorage.getItem("hasPlayed") === "true";
+    let deviceValidated = localStorage.getItem("deviceValidated") === "true";
+    let revealed = false;
+
+    // Utils
+    function showStatus(txt, isError=false) {
+      statusMsg.textContent = txt;
+      statusMsg.className = isError ? "error" : "info";
+    }
+
+    async function getNextPlayerNumber() {
       try {
-        // try joueurs first, fallback to players
-        let docs = await getDocs(collection(db, "joueurs"));
-        if (!docs || docs.empty) {
-          // try alternative collection name
-          docs = await getDocs(collection(db, "players"));
-        }
-        currentPlayerNumber = (docs && docs.size) ? docs.size + 1 : 1;
+        const snap = await getDocs(collection(db, "joueurs"));
+        return snap.size + 1;
+      } catch (err) {
+        console.error("getNextPlayerNumber:", err);
+        throw err;
+      }
+    }
 
-        if (currentPlayerNumber > 200) {
-          playerNumber.textContent = "🎉 Jeu terminé ! 200 joueurs atteints.";
+    // Validate admin on the tablet before each player
+    validateBtn.addEventListener("click", () => {
+      const val = (validateInput.value || "").trim();
+      if (val === VALIDATE_PWD) {
+        deviceValidated = true;
+        localStorage.setItem("deviceValidated", "true");
+        validateInput.value = "";
+        validateInput.disabled = true;
+        validateBtn.disabled = true;
+        showStatus("✅ Participation validée — le joueur peut jouer.");
+      } else {
+        showStatus("❌ Mot de passe invalide.", true);
+      }
+    });
+
+    // Setup game
+    async function setup() {
+      showStatus("Chargement...");
+      try {
+        // get next player number from firestore (joueurs collection)
+        const nextNum = await getNextPlayerNumber();
+        if (nextNum > MAX_PLAYERS) {
+          playerNumberEl.textContent = "🎉 Jeu terminé — 200 joueurs atteints.";
+          showStatus("Le quota de 200 joueurs est atteint.");
           return;
         }
-        playerNumber.textContent = "Joueur n°" + currentPlayerNumber;
+        playerIndex = playerIndex || nextNum;
+        if (!localStorage.getItem("playerIndex")) localStorage.setItem("playerIndex", playerIndex);
+        playerNumberEl.textContent = "Joueur n°" + playerIndex;
 
-        // draw golden layer only if no saved result
+        // If already revealed locally show result
         const saved = localStorage.getItem("resultat");
         if (saved) {
           showResult(saved);
           return;
         }
 
-        // fill golden layer
-        ctx.clearRect(0,0,canvas.width,canvas.height);
+        // draw golden layer
+        ctx.clearRect(0,0,scratchCanvas.width,scratchCanvas.height);
         ctx.fillStyle = "#d4af37";
-        ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.fillRect(0,0,scratchCanvas.width,scratchCanvas.height);
         ctx.globalCompositeOperation = "destination-out";
 
-        canvas.addEventListener("mousedown", startScratching);
-        canvas.addEventListener("touchstart", startScratching, {passive:false});
+        // attach scratch only if validated for this device
+        if (!deviceValidated) {
+          showStatus("⏳ Attente validation admin (entrez le mot de passe sur la tablette).");
+        } else {
+          showStatus("🔓 Validé — le joueur peut gratter.");
+        }
+
+        scratchCanvas.addEventListener("mousedown", startScratching);
+        scratchCanvas.addEventListener("touchstart", startScratching, {passive:false});
       } catch (err) {
-        console.error("Setup error:", err);
-        debugInfo.innerHTML = "<span class='error'>Erreur de connexion à la base : vérifier Firestore et la console.</span>";
-        playerNumber.textContent = "Erreur de chargement";
+        console.error(err);
+        showStatus("Erreur de connexion à la base — vérifier Firestore.", true);
       }
     }
 
     function startScratching(e) {
-      if (hasPlayed) return;
+      if (!deviceValidated) { showStatus("❗ Admin : entrez validate2025 pour autoriser le joueur.", true); return; }
+      if (hasPlayed) { showStatus("Vous avez déjà joué sur cet appareil.", true); return; }
       revealed = false;
-      canvas.addEventListener("mousemove", scratch);
-      canvas.addEventListener("touchmove", scratch, {passive:false});
-      canvas.addEventListener("mouseup", reveal);
-      canvas.addEventListener("touchend", reveal);
+      scratchCanvas.addEventListener("mousemove", scratch);
+      scratchCanvas.addEventListener("touchmove", scratch, {passive:false});
+      scratchCanvas.addEventListener("mouseup", reveal);
+      scratchCanvas.addEventListener("touchend", reveal);
     }
 
     function scratch(e) {
       e.preventDefault();
-      const rect = canvas.getBoundingClientRect();
+      const rect = scratchCanvas.getBoundingClientRect();
       const clientX = (e.touches ? e.touches[0].clientX : e.clientX);
       const clientY = (e.touches ? e.touches[0].clientY : e.clientY);
       const x = clientX - rect.left;
@@ -160,32 +231,44 @@
       hasPlayed = true;
       localStorage.setItem("hasPlayed","true");
 
-      const choice = winners[currentPlayerNumber] ?? loseMessage;
+      // Determine result by player index (1..200)
+      const choice = winners[playerIndex] || loseMessage;
       showResult(choice);
       localStorage.setItem("resultat", choice);
 
-      try {
-        video.style.display = "block";
-        video.play();
-      } catch(e){ console.warn("video play failed", e); }
+      // play animation video
+      try { video.style.display = "block"; video.play(); } catch(e){ console.warn("video fail",e); }
 
+      // save result in Firestore
       try {
         await addDoc(collection(db, "joueurs"), {
-          numero: currentPlayerNumber,
+          numero: playerIndex,
           resultat: choice,
-          date: new Date().toISOString()
+          date: new Date().toISOString(),
+          paid: true,          // admin validated on device already
+          ticketPrice: TICKET_PRICE_EUR
         });
       } catch (err) {
-        console.warn("Erreur addDoc:", err);
+        console.warn("Erreur sauvegarde Firestore:", err);
       }
 
+      // send email to admin
       try {
         emailjs.send("service_cqjooc5","template_ct2ucqj",{
-          to_name:"Admin MA EK MO",
-          message:`Le joueur n°${currentPlayerNumber} a joué.\nRésultat : ${choice}`,
-          reply_to:"contact@maekmo.com"
+          to_name: "Admin MA EK MO",
+          message: `Le joueur n°${playerIndex} a joué.\nRésultat : ${choice}`,
+          reply_to: "contact@maekmo.com"
         });
-      } catch(e){ console.warn("EmailJS send failed", e); }
+      } catch (e) { console.warn("EmailJS error", e); }
+
+      // After a player has played, require admin validation again for next player
+      deviceValidated = false;
+      localStorage.setItem("deviceValidated","false");
+      validateInput.disabled = false;
+      validateBtn.disabled = false;
+      showStatus("✔ Résultat enregistré. Pour le prochain joueur, entrez à nouveau le mot de passe admin.");
+      // increment local playerIndex for next device session (will be recalculated from Firestore on next load)
+      localStorage.removeItem("playerIndex");
     }
 
     function showResult(msg) {
@@ -193,20 +276,38 @@
       resultDiv.classList.add("visible");
     }
 
-    document.getElementById("reset-btn").addEventListener("click", async () => {
-      const pass = prompt("Mot de passe admin 🔐:");
-      if (pass !== "maekmo2025") { alert("❌ Mot de passe incorrect."); return; }
-      try {
-        // delete collection 'joueurs' documents
-        const docs = await getDocs(collection(db, "joueurs"));
-        docs.forEach(async d => { try { await deleteDoc(doc(db, "joueurs", d.id)); } catch(e){} });
-      } catch(e){}
+    // Local reset
+    resetLocalBtn.addEventListener("click", () => {
+      const pass = prompt("Entrez le mot de passe admin pour réinitialiser localement :");
+      if (pass !== RESET_PWD) { alert("Mot de passe incorrect."); return; }
       localStorage.clear();
-      alert("🔥 Jeu réinitialisé !");
+      alert("✅ LocalStorage vidé. Recharge la page.");
       location.reload();
     });
 
-    // start
+    // Full reset (Firestore)
+    fullResetBtn.addEventListener("click", async () => {
+      const pass = prompt("Entrez le mot de passe pour réinitialiser entièrement la base :");
+      if (pass !== RESET_PWD) { alert("Mot de passe incorrect."); return; }
+      if (!confirm("⚠️ Confirmer la suppression de tous les tickets (collection 'joueurs') ?")) return;
+      try {
+        // delete all docs in 'joueurs'
+        const snap = await getDocs(collection(db, "joueurs"));
+        for (const d of snap.docs) {
+          await deleteDoc(doc(db, "joueurs", d.id));
+        }
+        localStorage.clear();
+        alert("✅ Base Firestore 'joueurs' vidée et localStorage effacé.");
+        location.reload();
+      } catch (err) {
+        console.error("Full reset error:", err);
+        alert("Erreur lors de la réinitialisation Firestore. Voir console.");
+      }
+    });
+
+    openAdminBtn.addEventListener("click", () => { window.location.href = "admin.html"; });
+
+    // initialize
     setup();
   </script>
 </body>
